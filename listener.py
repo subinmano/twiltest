@@ -3,10 +3,10 @@ import sys
 import requests
 import json
 from flask import Flask, request, Response, make_response, jsonify, url_for, redirect, session
+import pymysql
 # Twilio Helper Library
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial
-import pymysql
 
 # Declare global variables
 #asr_lang = os.environ["asr_lang"]
@@ -32,15 +32,14 @@ def start():
 	action="place_call"
 	first_action = "place_call"
 	if "place_call" in first_action:
-		#dnis = testCaseJSON["steps"][currentCount][input]
-		
+		dnis = testCaseJSON["steps"][currentCount][input]
 		# Twilio Account Sid and Auth Token
 		account_sid = os.environ["account_sid"]
 		auth_token = os.environ["auth_token"]
 		client = Client(account_sid, auth_token)
 		session['currentCount']=1
-		call = client.calls.create(to="+917397340531", from_="+19362984573", url='http://a205bf3e.ngrok.io/recording?StepNumber=2')	
-		#call = client.calls.create(to="+917397340531", from_="+19362984573")	
+		call = client.calls.create(to=dnis, from_=cli, url='https://a205bf3e.ngrok.io/recording?StepNumber=2')	
+		#call = client.calls.create(to="+917397340531", from_="+19362984573")
 	else:
 		print ("test case is not valid")
 	return ""
@@ -48,13 +47,8 @@ def start():
   @app.route("/recording", methods=['GET', 'POST'])
 def recording():
 	response = VoiceResponse()
-	#session['testCaseObject'] = """{"test_case_id":"TC103","test_steps":"5","steps": [{"action":"place_call", 		"input":"8888888"		},
-	#{"action":"Say", 	"input":"i want my account balance"	},	{"action":"Say", 	"input":"savings account"	},	#{"action":"Say", 		"input":"12345678"		},		{"action":"Hangup", 		"input":""		}	]}"""
 	currentStepCount= request.values.get("StepNumber", None)
-	#testCaseObject="""{"test_case_id":"TC103","test_steps":"5","steps": [{"action":"place_call", 		#"input":"8888888"		},
-	#{"action":"Say", 	"input":"i want my account balance"	},	{"action":"Say", 	"input":"savings account"	},	#{"action":"Say", 		"input":"12345678"		},		{"action":"Hangup", 		"input":""		}	]}"""
-	session['testCaseObject']=getJSONStringForTestCases()
-    	testCaseObject=session['testCaseObject']
+	testCaseObject=session['testCaseObject']
     	print ("testCaseObject==>"+currentStepCount)
     	testCaseJSON = json.loads(testCaseObject)
     	print ("test_case_id==>"+testCaseJSON["test_case_id"])
@@ -91,10 +85,10 @@ def recording_stat():
 	RecordingSource	= request.values.get("RecordingSource", None)
 	StepNumber = request.values.get("Step", None)
 	testCaseID = request.values.get("currentTestCaseID", None)
+	updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
 	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingSid==>"+RecordingSid+"\nRecordingUrl==>"+RecordingUrl+"\nRecordingDuration==>"+RecordingDuration+"\nStep number==>"+str(StepNumber))
 	return ""
-
 
 def getJSONStringForTestCases():
 	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='root', db='infypoc')
@@ -121,6 +115,19 @@ def getJSONStringForTestCases():
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
 	return jsonTestCaseString
+
+def updateResultToDB(recordingURL,recordingDuration,testcaseID,testCaseStep):
+	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='root', db='infypoc')
+	cur = conn.cursor()
+        print(str(recordingURL)+"||"+str(recordingDuration)+"||"+testcaseID+"||"+testCaseStep)
+	query = "UPDATE  ivr_test_case_master set recording_url = %s, recording_duration = %s where testcaseid=%s and testcasestepid = %s"
+	args = (recordingURL,str(recordingDuration),str(testcaseID),testCaseStep)
+	cur.execute(query,args)
+	print("Rows Affected==>"+str(cur.rowcount))
+	conn.commit()
+	cur.close()
+	conn.close()
+	return ""
   
   if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5001))
