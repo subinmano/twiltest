@@ -4,6 +4,8 @@ import os
 import pymysql
 from flask import Flask, render_template,request,session,redirect
 
+from listener import recording
+
 app = Flask(__name__,template_folder='template')
 
 #Set key for session variables
@@ -145,6 +147,9 @@ def getJSONStringForTestCases():
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
 	return jsonTestCaseString
+
+#########################################Twilio recording code#############################################
+
 		
 if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
