@@ -2,10 +2,19 @@
 # -*- coding: utf-8 -*-
 import os
 import pymysql
-from flask import Flask, render_template,request,session,redirect
+from flask import Flask, request, Response, make_response, jsonify, url_for, redirect, session
+import sys
+import requests
+import json
+# Twilio Helper Library
+from twilio.rest import Client
+from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial
 
-from listener import recording
+# Declare global variables
+#asr_lang = os.environ["asr_lang"]
+#cli = os.environ["cli"]
 
+#Initiate Flask app
 app = Flask(__name__,template_folder='template')
 
 #Set key for session variables
@@ -13,24 +22,32 @@ SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
 print("SECRET_KEY==>"+SECRET_KEY)
 app.secret_key=SECRET_KEY
 
+# Declare global variables
+cli = os.environ["cli"]
+dnis = os.environ["dnis"]
+account_sid = os.environ["account_sid"]
+auth_token = os.environ["auth_token"]
+hostname = request.url_root
+databasename = os.environ["databasename"]
+databasehost = os.environ["databasehost"]
+databaseusername = os.environ["databaseusername"]
+databasepassword = os.environ["databasepassword"]
+
+#Homepage
 @app.route('/TestCaseUpload')
 def load_TestCaseUploadPage():
 	return render_template("FileUpload.html")
 
-@app.route('/RedirectTest',methods = ['POST','GET'])
-def RedirectedPage():
-	print("This is a redirect test")
-	return "This is redirect Test"
-
+# Invoking Uploading testcases to database method from HTML page
 @app.route('/UploadTestCaseToDB',methods = ['POST'])
 def submitFileToDB():
 	if request.method == 'POST':
 		f = request.files['fileToUpload']
 		f.save(f.filename)
 		uploadTestCaseToDB(f.filename)
-		#return readUploadedTestCaseFile(f.filename)
 	return readTestCasesFromDB()
 
+# Return status of upload to database in HTML page
 def readUploadedTestCaseFile(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
 		fileArray = []
@@ -42,10 +59,11 @@ def readUploadedTestCaseFile(uploadedFileName):
 			fileContent =  fileContent + '<tr><td>'+splittedTestCaseLine[0]+'</td><td>'+splittedTestCaseLine[1]+'</td></tr>'
 		fileContent =  fileContent + '</body></html>'
 		return fileContent
-
+	
+# Upload test case details to Database
 def uploadTestCaseToDB(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
-		conn = pymysql.connect(host='127.0.0.1', user='root', passwd='root', db='infypoc')
+		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
 		cur = conn.cursor()
 		i=0
 		for line in ins:
@@ -56,7 +74,7 @@ def uploadTestCaseToDB(uploadedFileName):
 			inputValue = splittedTestCaseLine[3]
 			expectedValue = splittedTestCaseLine[4]
 			actualValue = splittedTestCaseLine[5]
-			query = "INSERT INTO  ivr_test_case_master(testcaseid,testcasestepid,action,input_value,expected_value,actual_value) values (%s,%s,%s,%s,%s,%s)"	
+			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_value,expected_value,actual_value) values (%s,%s,%s,%s,%s,%s)"	
 			args = (caseID,caseStepID,action,inputValue,expectedValue,actualValue)
 			if i!=0:
 				cur.execute(query,args)
@@ -65,14 +83,16 @@ def uploadTestCaseToDB(uploadedFileName):
 		conn.commit()
 		cur.close()
 		conn.close()
-		
+
+#Validation of testcase upload
 def validateString(testCaseItem):
 	if not testCaseItem: 
 		return " "
 	return testCaseItem
 
+#Get test case details from Database
 def readTestCasesFromDB():
-	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='root', db='infypoc')
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
 	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180"><col width="380"><col width="280"><tr><th>Action </th> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
@@ -82,48 +102,21 @@ def readTestCasesFromDB():
 	cur.close()
 	conn.close()
 	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data">	<input type="submit" value="Execute Test cases" name="submit"></form></body></html>'
-	#fileContent =  fileContent + '</body></html>'
 	return fileContent
 
+# Submit POST request 
 @app.route('/ExecuteTestCase',methods = ['POST'])
 def ExecuteTestCaseUpdateResult():
-	resultArray=["Result1","Result2","Result3","Result4","Result5"]
-	testCaseStepID=["1","2","3","4","5"]
-	testCaseID="TC103"
 	i=0
 	jsonStringForTestCase=getJSONStringForTestCases()
 	session['TestCaseString']=jsonStringForTestCase
 	print("jsonStringForTestCase==>"+jsonStringForTestCase)
 	#request.args["TestCaseToBeExecuted"]=jsonStringForTestCase
-	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='root', db='infypoc')
-	cur = conn.cursor()
-	for resultItem in resultArray:
-		query = "UPDATE  ivr_test_case_master set actual_value = %s where testcaseid=%s and testcasestepid = %s"	
-		args = (resultItem,"TC103",testCaseStepID[i])
-		i=i+1
-		cur.execute(query,args)
-	conn.commit()
-	cur.close()
-	conn.close()
-	return redirect("http://localhost:5001/start", code=307)
-	#return ReturnTestCaseHTMLResult(testCaseID)
-	
-def ReturnTestCaseHTMLResult(testCaseIDToBePublished):	
-	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='root', db='infypoc')
-	cur = conn.cursor()
-	cur.execute("SELECT * FROM ivr_test_case_master")
-	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180"><col width="380"><col width="280"><tr> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
-	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td></tr>'
-		print("R3==>"+r[3])
-	cur.close()
-	conn.close()
-	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data">	<input type="submit" value="Execute Test cases" name="submit"></form></body></html>'
-	#fileContent =  fileContent + '</body></html>'
-	return fileContent
+	return redirect(hostname + '/start', code=307)
 
+# Read test case data from database
 def getJSONStringForTestCases():
-	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='root', db='infypoc')
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
 	testCaseid=""
@@ -148,8 +141,105 @@ def getJSONStringForTestCases():
 	jsonTestCaseString=jsonTestCaseString+']}'
 	return jsonTestCaseString
 
+# Show testcase execution result in HTML page
+def ReturnTestCaseHTMLResult(testCaseIDToBePublished):	
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM ivr_test_case_master")
+	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180"><col width="380"><col width="280"><tr> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
+	for r in cur:
+		fileContent =  fileContent + '<tr><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td></tr>'
+		print("R3==>"+r[3])
+	cur.close()
+	conn.close()
+	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data"> <input type="submit" value="Execute Test cases" name="submit"></form></body></html>'
+	return fileContent
+
 #########################################Twilio recording code#############################################
 
+#Receive the POST request
+@app.route('/start', methods=['GET','POST'])
+def start():
+	#Get testcase details as string
+	session['testCaseObject'] = session['TestCaseString']
+	print ("session['TestCaseString']==>"+session['TestCaseString'])
+	session['currentCount']=0
+	currentCount=0
+	testCaseObject = session['testCaseObject']
+	testCaseJSON = json.loads(testCaseObject)
+	action="place_call"
+	first_action = "place_call"
+	if "place_call" in first_action:
+		dnis = testCaseJSON["steps"][currentCount][input]
+		# Twilio Account Sid and Auth Token
+		account_sid = os.environ["account_sid"]
+		auth_token = os.environ["auth_token"]
+		client = Client(account_sid, auth_token)
+		session['currentCount']=1
+		call = client.calls.create(to=dnis, from_=cli, url='/recording?StepNumber=2')	
+		#call = client.calls.create(to="+917397340531", from_="+19362984573")
+	else:
+		print ("test case is not valid")
+	return ""
+
+# Twilio functions for record and TTS
+@app.route("/recording", methods=['GET', 'POST'])
+def recording():
+	response = VoiceResponse()
+	currentStepCount= request.values.get("StepNumber", None)
+	testCaseObject=session['testCaseObject']
+    	print ("testCaseObject==>"+currentStepCount)
+    	testCaseJSON = json.loads(testCaseObject)
+    	print ("test_case_id==>"+testCaseJSON["test_case_id"])
+    	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
+    	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
+    	print("currentStepCount==>"+str(currentStepCount)+"")
+    	if action=='do_nothing':
+	    	currentStepCount=currentStepCount+1
+	    	session['currentCount']=str(currentStepCount)
+	    	response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+    	if "Say" in action:
+	    	currentStepCount=int(currentStepCount)+1
+	    	session['currentCount']=str(currentStepCount)
+	    	response.say(inputMsg)
+	    	response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+    	if "Hangup" in action:
+	    	response.hangup()
+    	return str(response)
+
+# Receive recordng metadata
+@app.route('/recording_stat', methods=['POST'])
+def recording_stat():
+	req = request.get_json(silent=True, force=True)
+	AccountSid = request.values.get("AccountSid", None)
+	CallSid =  request.values.get("CallSid", None)
+	RecordingSid = request.values.get("RecordingSid", None)
+	RecordingUrl = request.values.get("RecordingUrl", None)
+	RecordingStatus = request.values.get("RecordingStatus", None)
+	RecordingDuration = request.values.get("RecordingDuration", None)
+	RecordingChannels = request.values.get("RecordingChannels", None)
+	RecordingStartTime = request.values.get("RecordingStartTime", None)
+	RecordingSource	= request.values.get("RecordingSource", None)
+	StepNumber = request.values.get("Step", None)
+	testCaseID = request.values.get("currentTestCaseID", None)
+	updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
+	print("testCaseID==>"+str(testCaseID))
+	print ("RecordingSid==>"+RecordingSid+"\nRecordingUrl==>"+RecordingUrl+"\nRecordingDuration==>"+RecordingDuration+"\nStep number==>"+str(StepNumber))
+	return ""
+
+# Update recording metadata to Database
+def updateResultToDB(recordingURL,recordingDuration,testcaseID,testCaseStep):
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
+	cur = conn.cursor()
+        print(str(recordingURL)+"||"+str(recordingDuration)+"||"+testcaseID+"||"+testCaseStep)
+	query = "UPDATE  ivr_test_case_master set recording_url = %s, recording_duration = %s where testcaseid=%s and testcasestepid = %s"
+	args = (recordingURL,str(recordingDuration),str(testcaseID),testCaseStep)
+	cur.execute(query,args)
+	print("Rows Affected==>"+str(cur.rowcount))
+	conn.commit()
+	cur.close()
+	conn.close()
+	return ""
 		
 if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
