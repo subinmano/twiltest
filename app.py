@@ -187,23 +187,23 @@ def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
 	testCaseObject=session['testCaseObject']
-    	print ("testCaseObject==>"+currentStepCount)
-    	testCaseJSON = json.loads(testCaseObject)
-    	print ("test_case_id==>"+testCaseJSON["test_case_id"])
-    	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
-    	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
-    	print("currentStepCount==>"+str(currentStepCount)+"")
-    	if action=='do_nothing':
-	    	currentStepCount=currentStepCount+1
-	    	session['currentCount']=str(currentStepCount)
-	    	response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
-    	if "Say" in action:
-	    	currentStepCount=int(currentStepCount)+1
-	    	session['currentCount']=str(currentStepCount)
-	    	response.say(inputMsg)
-	    	response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
-    	if "Hangup" in action:
-	    	response.hangup()
+	print ("testCaseObject==>"+currentStepCount)
+	testCaseJSON = json.loads(testCaseObject)
+	print ("test_case_id==>"+testCaseJSON["test_case_id"])
+	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
+	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
+	print("currentStepCount==>"+str(currentStepCount)+"")
+	if action=='do_nothing':
+		currentStepCount=currentStepCount+1
+		session['currentCount']=str(currentStepCount)
+		response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+	if "Say" in action:
+		currentStepCount=int(currentStepCount)+1
+		session['currentCount']=str(currentStepCount)
+		response.say(inputMsg)
+		response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+	if "Hangup" in action:
+		response.hangup()
     	return str(response)
 
 # Receive recordng metadata
