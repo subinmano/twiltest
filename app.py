@@ -35,6 +35,7 @@ databasepassword = os.environ["databasepassword"]
 #Homepage
 @app.route('/TestCaseUpload')
 def load_TestCaseUploadPage():
+	print("I am here")
 	return render_template("FileUpload.html")
 
 # Invoking Uploading testcases to database method from HTML page
