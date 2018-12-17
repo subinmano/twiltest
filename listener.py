@@ -33,11 +33,10 @@ def start():
 	first_action = "place_call"
 	if "place_call" in first_action:
 		#dnis = testCaseJSON["steps"][currentCount][input]
+		
 		# Twilio Account Sid and Auth Token
-		#account_sid = os.environ["account_sid"]
-		account_sid = "ACf7d3b821a12be5e1b80f274db0b64aef"
-		#auth_token = os.environ["auth_token"]
-		auth_token = "ab0591b383511f41962c9c1217b7c5dd"
+		account_sid = os.environ["account_sid"]
+		auth_token = os.environ["auth_token"]
 		client = Client(account_sid, auth_token)
 		session['currentCount']=1
 		call = client.calls.create(to="+917397340531", from_="+19362984573", url='http://a205bf3e.ngrok.io/recording?StepNumber=2')	
