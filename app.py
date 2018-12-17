@@ -230,7 +230,7 @@ def recording_stat():
 def updateResultToDB(recordingURL,recordingDuration,testcaseID,testCaseStep):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
 	cur = conn.cursor()
-        print(str(recordingURL)+"||"+str(recordingDuration)+"||"+testcaseID+"||"+testCaseStep)
+	print(str(recordingURL)+"||"+str(recordingDuration)+"||"+testcaseID+"||"+testCaseStep)
 	query = "UPDATE  ivr_test_case_master set recording_url = %s, recording_duration = %s where testcaseid=%s and testcasestepid = %s"
 	args = (recordingURL,str(recordingDuration),str(testcaseID),testCaseStep)
 	cur.execute(query,args)
