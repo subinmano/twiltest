@@ -48,34 +48,34 @@ def start():
   
   @app.route("/recording", methods=['GET', 'POST'])
 def recording():
-    response = VoiceResponse()
-    #session['testCaseObject'] = """{"test_case_id":"TC103","test_steps":"5","steps": [{"action":"place_call", 		"input":"8888888"		},
+	response = VoiceResponse()
+	#session['testCaseObject'] = """{"test_case_id":"TC103","test_steps":"5","steps": [{"action":"place_call", 		"input":"8888888"		},
 	#{"action":"Say", 	"input":"i want my account balance"	},	{"action":"Say", 	"input":"savings account"	},	#{"action":"Say", 		"input":"12345678"		},		{"action":"Hangup", 		"input":""		}	]}"""
-    currentStepCount= request.values.get("StepNumber", None)
-    #testCaseObject="""{"test_case_id":"TC103","test_steps":"5","steps": [{"action":"place_call", 		#"input":"8888888"		},
+	currentStepCount= request.values.get("StepNumber", None)
+	#testCaseObject="""{"test_case_id":"TC103","test_steps":"5","steps": [{"action":"place_call", 		#"input":"8888888"		},
 	#{"action":"Say", 	"input":"i want my account balance"	},	{"action":"Say", 	"input":"savings account"	},	#{"action":"Say", 		"input":"12345678"		},		{"action":"Hangup", 		"input":""		}	]}"""
-    session['testCaseObject']=getJSONStringForTestCases()
-    testCaseObject=session['testCaseObject']
-    print ("testCaseObject==>"+currentStepCount)
-    testCaseJSON = json.loads(testCaseObject)
-    print ("test_case_id==>"+testCaseJSON["test_case_id"])
-    action = testCaseJSON["steps"][int(currentStepCount)]["action"]
-    inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
-    print("currentStepCount==>"+str(currentStepCount)+"")
-    if action=='do_nothing':
-	    currentStepCount=currentStepCount+1
-	    session['currentCount']=str(currentStepCount)
-	    response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
-    if "Say" in action:
-	    currentStepCount=int(currentStepCount)+1
-	    session['currentCount']=str(currentStepCount)
-	    response.say(inputMsg)
-	    response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
-    if "Hangup" in action:
-	    response.hangup()
-    return str(response)
+	session['testCaseObject']=getJSONStringForTestCases()
+    	testCaseObject=session['testCaseObject']
+    	print ("testCaseObject==>"+currentStepCount)
+    	testCaseJSON = json.loads(testCaseObject)
+    	print ("test_case_id==>"+testCaseJSON["test_case_id"])
+    	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
+    	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
+    	print("currentStepCount==>"+str(currentStepCount)+"")
+    	if action=='do_nothing':
+	    	currentStepCount=currentStepCount+1
+	    	session['currentCount']=str(currentStepCount)
+	    	response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+    	if "Say" in action:
+	    	currentStepCount=int(currentStepCount)+1
+	    	session['currentCount']=str(currentStepCount)
+	    	response.say(inputMsg)
+	    	response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+    	if "Hangup" in action:
+	    	response.hangup()
+    	return str(response)
     
-   #####
+#####
 ##### Receive recordng metadata
 #####
 @app.route('/recording_stat', methods=['POST'])
@@ -95,6 +95,8 @@ def recording_stat():
 	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingSid==>"+RecordingSid+"\nRecordingUrl==>"+RecordingUrl+"\nRecordingDuration==>"+RecordingDuration+"\nStep number==>"+str(StepNumber))
 	return ""
+
+
 def getJSONStringForTestCases():
 	conn = pymysql.connect(host='127.0.0.1', user='root', passwd='root', db='infypoc')
 	cur = conn.cursor()
