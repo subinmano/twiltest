@@ -204,7 +204,7 @@ def recording():
 		response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "Hangup" in action:
 		response.hangup()
-    	return str(response)
+	return str(response)
 
 # Receive recordng metadata
 @app.route('/recording_stat', methods=['POST'])
