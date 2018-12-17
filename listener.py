@@ -38,13 +38,13 @@ def start():
 		auth_token = os.environ["auth_token"]
 		client = Client(account_sid, auth_token)
 		session['currentCount']=1
-		call = client.calls.create(to=dnis, from_=cli, url='https://a205bf3e.ngrok.io/recording?StepNumber=2')	
+		call = client.calls.create(to=dnis, from_=cli, url='/recording?StepNumber=2')	
 		#call = client.calls.create(to="+917397340531", from_="+19362984573")
 	else:
 		print ("test case is not valid")
 	return ""
-  
-  @app.route("/recording", methods=['GET', 'POST'])
+
+@app.route("/recording", methods=['GET', 'POST'])
 def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
