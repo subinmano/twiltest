@@ -27,7 +27,6 @@ cli = os.environ["cli"]
 dnis = os.environ["dnis"]
 account_sid = os.environ["account_sid"]
 auth_token = os.environ["auth_token"]
-hostname = request.url_root
 databasename = os.environ["databasename"]
 databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
@@ -112,6 +111,7 @@ def ExecuteTestCaseUpdateResult():
 	session['TestCaseString']=jsonStringForTestCase
 	print("jsonStringForTestCase==>"+jsonStringForTestCase)
 	#request.args["TestCaseToBeExecuted"]=jsonStringForTestCase
+	hostname = request.url_root
 	return redirect(hostname + '/start', code=307)
 
 # Read test case data from database
