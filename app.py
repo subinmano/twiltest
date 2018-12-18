@@ -164,7 +164,7 @@ def ReturnTestCaseHTMLResult(testCaseIDToBePublished):
 @app.route('/start', methods=['GET','POST'])
 def start():
 	#Get testcase details as string
-	session['testCaseObject'] = session['TestCaseString']
+	session['testCaseObject'] = getJSONStringForTestCases()
 	print ("session['TestCaseString']==>"+session['TestCaseString'])
 	session['currentCount']=0
 	currentCount=0
