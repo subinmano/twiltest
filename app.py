@@ -174,7 +174,8 @@ def start():
 	action="place_call"
 	first_action = "place_call"
 	if "place_call" in first_action:
-		dnis = testCaseJSON["steps"][currentCount][input]
+		print(dnis, cli)
+		#dnis = testCaseJSON["steps"][currentCount][input]
 		# Twilio Account Sid and Auth Token
 		account_sid = os.environ["account_sid"]
 		auth_token = os.environ["auth_token"]
