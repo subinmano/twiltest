@@ -181,8 +181,8 @@ def start():
 		auth_token = os.environ["auth_token"]
 		client = Client(account_sid, auth_token)
 		session['currentCount']=1
-		print("URL==>" + url_for('.recording', StepNumber=['2'], _external=True))
-		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['2'], _external=True))
+		print("URL==>" + url_for('.recording', StepNumber=['1'], _external=True))
+		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['1'], _external=True))
 	else:
 		print ("test case is not valid")
 	return ""
@@ -202,12 +202,12 @@ def recording():
 	if action=='do_nothing':
 		currentStepCount=currentStepCount+1
 		session['currentCount']=str(currentStepCount)
-		response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "Say" in action:
 		currentStepCount=int(currentStepCount)+1
 		session['currentCount']=str(currentStepCount)
 		response.say(inputMsg)
-		response.record(maxLength="5", action="/recording?StepNumber="+str(currentStepCount),timeout="5",recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "Hangup" in action:
 		response.hangup()
 	return str(response)
