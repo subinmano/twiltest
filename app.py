@@ -63,7 +63,7 @@ def readUploadedTestCaseFile(uploadedFileName):
 # Upload test case details to Database
 def uploadTestCaseToDB(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
-		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
+		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
 		i=0
 		for line in ins:
@@ -92,7 +92,7 @@ def validateString(testCaseItem):
 
 #Get test case details from Database
 def readTestCasesFromDB():
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
 	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180"><col width="380"><col width="280"><tr><th>Action </th> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
@@ -117,7 +117,7 @@ def ExecuteTestCaseUpdateResult():
 
 # Read test case data from database
 def getJSONStringForTestCases():
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
 	testCaseid=""
@@ -144,7 +144,7 @@ def getJSONStringForTestCases():
 
 # Show testcase execution result in HTML page
 def ReturnTestCaseHTMLResult(testCaseIDToBePublished):	
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
 	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180"><col width="380"><col width="280"><tr> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
@@ -229,7 +229,7 @@ def recording_stat():
 
 # Update recording metadata to Database
 def updateResultToDB(recordingURL,recordingDuration,testcaseID,testCaseStep):
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, db=databasename)
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	print(str(recordingURL)+"||"+str(recordingDuration)+"||"+testcaseID+"||"+testCaseStep)
 	query = "UPDATE  ivr_test_case_master set recording_url = %s, recording_duration = %s where testcaseid=%s and testcasestepid = %s"
