@@ -192,7 +192,7 @@ def start():
 def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
-	testCaseObject=session['testCaseObject']
+	testCaseObject = getJSONStringForTestCases()
 	print ("testCaseObject==>"+currentStepCount)
 	testCaseJSON = json.loads(testCaseObject)
 	print ("test_case_id==>"+testCaseJSON["test_case_id"])
