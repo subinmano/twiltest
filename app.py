@@ -84,6 +84,7 @@ def uploadTestCaseToDB(uploadedFileName):
 		conn.commit()
 		cur.close()
 		conn.close()
+		return ""
 
 #Validation of testcase upload
 def validateString(testCaseItem):
