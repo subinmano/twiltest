@@ -181,8 +181,8 @@ def start():
 		auth_token = os.environ["auth_token"]
 		client = Client(account_sid, auth_token)
 		session['currentCount']=1
-		print("URL==>" + url_for('.recording?StepNumber=2', _external=True))
-		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording?StepNumber=2', _external=True))
+		print("URL==>" + url_for('.recording', StepNumber=['2'], _external=True))
+		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['2'], _external=True))
 	else:
 		print ("test case is not valid")
 	return ""
