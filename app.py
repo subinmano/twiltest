@@ -63,6 +63,7 @@ def readUploadedTestCaseFile(uploadedFileName):
 # Upload test case details to Database
 def uploadTestCaseToDB(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
+		print(databasehost, databaseusername, databasepassword, databasename)
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
 		i=0
