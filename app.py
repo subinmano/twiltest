@@ -115,6 +115,7 @@ def ExecuteTestCaseUpdateResult():
 	print("jsonStringForTestCase==>"+jsonStringForTestCase)
 	#request.args["TestCaseToBeExecuted"]=jsonStringForTestCase
 	hostname = request.url_root
+	print(hostname)
 	return redirect(hostname + '/start', code=307)
 
 # Read test case data from database
