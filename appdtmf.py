@@ -199,9 +199,12 @@ def recording():
 	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
 	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
 	print("currentStepCount==>"+str(currentStepCount)+"")
-	if action=='do_nothing':
+	if action=='place_call':
 		currentStepCount=currentStepCount+1
 		session['currentCount']=str(currentStepCount)
+		response.pause(length=7)
+		response.play('', digits=inputMsg)
+		response.pause(length=1.5)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "DTMF" in action:
 		currentStepCount=int(currentStepCount)+1
