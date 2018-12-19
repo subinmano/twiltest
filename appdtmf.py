@@ -200,9 +200,11 @@ def recording():
 	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
 	print("currentStepCount==>"+str(currentStepCount)+"")
 	if action=='place_call':
+		print("i am at first step")
 		currentStepCount=currentStepCount+1
 		session['currentCount']=str(currentStepCount)
-		response.pause(length=9.5)
+		response.pause(length=9)
+		print("i have paused", inputMsg)
 		response.play('', digits=inputMsg)
 		response.pause(length=1)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
