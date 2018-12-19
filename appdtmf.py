@@ -202,16 +202,16 @@ def recording():
 	if action=='place_call':
 		currentStepCount=currentStepCount+1
 		session['currentCount']=str(currentStepCount)
-		response.pause(length=7)
+		response.pause(length=9.5)
 		response.play('', digits=inputMsg)
-		response.pause(length=1.5)
+		response.pause(length=1)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "DTMF" in action:
 		currentStepCount=int(currentStepCount)+1
 		session['currentCount']=str(currentStepCount)
 		#response.say(inputMsg)
 		response.play('', digits=inputMsg)
-		response.pause(length=1.5)
+		#response.pause(length=1)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "Hangup" in action:
 		response.hangup()
