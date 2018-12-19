@@ -182,7 +182,7 @@ def start():
 		client = Client(account_sid, auth_token)
 		session['currentCount']=1
 		print("URL==>" + url_for('.recording', StepNumber=['1'], _external=True))
-		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['1'], _external=True))
+		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True))
 	else:
 		print ("test case is not valid")
 	return ""
@@ -200,7 +200,7 @@ def recording():
 	print("Action is =>" + action)
 	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
 	print("currentStepCount==>"+str(currentStepCount)+"")
-	if action=='place_call':
+	if "place_call" in action:
 		print("i am at first step")
 		currentStepCount=currentStepCount+1
 		session['currentCount']=str(currentStepCount)
