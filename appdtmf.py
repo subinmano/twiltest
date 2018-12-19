@@ -159,7 +159,7 @@ def ReturnTestCaseHTMLResult(testCaseIDToBePublished):
 	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data"> <input type="submit" value="Execute Test cases" name="submit"></form></body></html>'
 	return fileContent
 
-#########################################Twilio recording code#############################################
+############################################################Twilio recording code######################################################################################
 
 #Receive the POST request
 @app.route('/start', methods=['GET','POST'])
@@ -181,7 +181,7 @@ def start():
 		auth_token = os.environ["auth_token"]
 		client = Client(account_sid, auth_token)
 		session['currentCount']=1
-		print("URL==>" + url_for('.recording', StepNumber=['1'], _external=True))
+		print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
 		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True))
 	else:
 		print ("test case is not valid")
@@ -192,6 +192,7 @@ def start():
 def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
+	print("CurrentStepCount is " + currentStepCount)
 	testCaseObject = getJSONStringForTestCases()
 	print ("testCaseObject==>"+currentStepCount)
 	testCaseJSON = json.loads(testCaseObject)
