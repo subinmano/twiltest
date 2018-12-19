@@ -202,7 +202,7 @@ def recording():
 	print("currentStepCount==>"+str(currentStepCount)+"")
 	if "place_call" in action:
 		print("i am at first step")
-		currentStepCount=currentStepCount+1
+		currentStepCount=int(currentStepCount)+1
 		session['currentCount']=str(currentStepCount)
 		response.pause(length=9)
 		print("i have paused", inputMsg)
