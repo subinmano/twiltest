@@ -197,6 +197,7 @@ def recording():
 	testCaseJSON = json.loads(testCaseObject)
 	print ("test_case_id==>"+testCaseJSON["test_case_id"])
 	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
+	print("Action is =>" + action)
 	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
 	print("currentStepCount==>"+str(currentStepCount)+"")
 	if action=='place_call':
@@ -209,6 +210,7 @@ def recording():
 		response.pause(length=1)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "DTMF" in action:
+		print("i am at DTMF step")
 		currentStepCount=int(currentStepCount)+1
 		session['currentCount']=str(currentStepCount)
 		#response.say(inputMsg)
