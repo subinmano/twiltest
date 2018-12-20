@@ -187,7 +187,7 @@ def start():
 		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		session['currentCount']=1
 		print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
-		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True), record=True)
+		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True))
 	else:
 		print ("test case is not valid")
 	return ""
@@ -223,7 +223,7 @@ def recording():
 		print(inputMsg)
 		response.play(digits=inputMsg)
 		#response.pause(length=1)
-		#response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "Hangup" in action:
 		response.hangup()
 	return str(response)
