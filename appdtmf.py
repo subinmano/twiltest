@@ -7,8 +7,11 @@ import sys
 import requests
 import json
 # Twilio Helper Library
-from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
+#from twilio.rest import Client
+#from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
+# Signalwire Helper lirary
+from signalwire.rest import Client as signalwire_client
+from signalwire.voice_response import VoiceResponse
 
 # Declare global variables
 #asr_lang = os.environ["asr_lang"]
@@ -176,10 +179,12 @@ def start():
 	if "place_call" in first_action:
 		print(dnis, cli)
 		#dnis = testCaseJSON["steps"][currentCount][input]
-		# Twilio Account Sid and Auth Token
+		# Twilio/Signalwire Account Sid and Auth Token
 		account_sid = os.environ["account_sid"]
 		auth_token = os.environ["auth_token"]
-		client = Client(account_sid, auth_token)
+		signalwire_space_url = os.environ["signalwire_space_url"]
+		#client = Client(account_sid, auth_token)
+		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		session['currentCount']=1
 		print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
 		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True))
