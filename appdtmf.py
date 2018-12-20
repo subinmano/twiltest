@@ -232,6 +232,10 @@ def recording():
 @app.route('/recording_stat', methods=['POST'])
 def recording_stat():
 	req = request.get_json(silent=True, force=True)
+	StepNumber = request.values.get("Step", None)
+	print("StepNumber==>"+str(StepNumber))
+	testCaseID = request.values.get("currentTestCaseID", None)
+	print("testCaseID==>"+str(testCaseID))
 	AccountSid = request.values.get("AccountSid", None)
 	CallSid =  request.values.get("CallSid", None)
 	RecordingSid = request.values.get("RecordingSid", None)
@@ -239,12 +243,9 @@ def recording_stat():
 	RecordingStatus = request.values.get("RecordingStatus", None)
 	RecordingDuration = request.values.get("RecordingDuration", None)
 	RecordingChannels = request.values.get("RecordingChannels", None)
-	RecordingStartTime = request.values.get("RecordingStartTime", None)
+	#RecordingStartTime = request.values.get("RecordingStartTime", None)
 	RecordingSource	= request.values.get("RecordingSource", None)
-	StepNumber = request.values.get("Step", None)
-	testCaseID = request.values.get("currentTestCaseID", None)
 	updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
-	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingSid==>"+RecordingSid+"\nRecordingUrl==>"+RecordingUrl+"\nRecordingDuration==>"+RecordingDuration+"\nStep number==>"+str(StepNumber))
 	return ""
 
