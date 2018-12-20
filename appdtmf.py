@@ -187,7 +187,7 @@ def start():
 		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		session['currentCount']=1
 		print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
-		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True))
+		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True), record=True)
 	else:
 		print ("test case is not valid")
 	return ""
