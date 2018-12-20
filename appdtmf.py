@@ -186,7 +186,6 @@ def start():
 		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		session['currentCount']=1
 		print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
-		session['test']="This is a test"
 		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True))
 	else:
 		print ("test case is not valid")
@@ -195,7 +194,6 @@ def start():
 # Twilio functions for record and TTS
 @app.route("/recording", methods=['GET', 'POST'])
 def recording():
-	print("to check session=>"+ session['test'])
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
 	print("CurrentStepCount is " + currentStepCount)
