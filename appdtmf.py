@@ -213,13 +213,14 @@ def recording():
 		#response.pause(length=9)
 		#print("i have paused", inputMsg)
 		#response.play('', digits=inputMsg)
-		response.pause(length=1)
+		#response.pause(length=1)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "DTMF" in action:
 		print("i am at DTMF step")
 		currentStepCount=int(currentStepCount)+1
 		session['currentCount']=str(currentStepCount)
 		#response.say(inputMsg)
+		print(inputMsg)
 		response.play('', digits=inputMsg)
 		#response.pause(length=1)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
