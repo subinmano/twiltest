@@ -202,8 +202,8 @@ def start():
 @app.route("/record_welcome", methods=['GET', 'POST'])
 def record_welcome():
 	response = VoiceResponse()
-	currentTestCaseID=request.values.get("test_case_id", None)
-	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step=1&currentTestCaseID="+currentTestCaseID)
+	currentTestCaseid=request.values.get("test_case_id", None)
+	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid]))
 	return str(response)
 
 # Twilio functions for record and TTS
@@ -227,7 +227,7 @@ def recording():
 		#response.say(inputMsg)
 		print(inputMsg)
 		response.play(digits=inputMsg)
-		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid]))
 	if "Hangup" in action:
 		response.hangup()
 	return str(response)
@@ -235,7 +235,7 @@ def recording():
 # Receive recordng metadata
 @app.route('/recording_stat', methods=['POST'])
 def recording_stat():
-	req = request.get_json(silent=True, force=True)
+	print("I am at recording callback event")
 	StepNumber = request.values.get("Step", None)
 	print("StepNumber==>"+str(StepNumber))
 	testCaseID = request.values.get("currentTestCaseID", None)
