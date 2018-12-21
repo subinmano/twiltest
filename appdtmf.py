@@ -43,6 +43,7 @@ def submitFileToDB():
 		f = request.files['fileToUpload']
 		f.save(f.filename)
 		uploadTestCaseToDB(f.filename)
+		uploadJSONTODB()
 	return readTestCasesFromDB()
 
 # Show uploaded test case in HTML page
@@ -116,8 +117,8 @@ def ExecuteTestCaseUpdateResult():
 	print(hostname)
 	return redirect(hostname + 'start', code=307)
 
-# Read test case data from database
-def getJSONStringForTestCases():
+#Create Json string of Testcase details and insert to table
+def uploadJSONTODB():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
@@ -141,7 +142,26 @@ def getJSONStringForTestCases():
 		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[1]+'","input":"'+splittedTestCaseItem[2]+'"},'
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
-	return jsonTestCaseString
+	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"	
+	args = (testCaseid,jsonTestCaseString)
+	cur.execute(query,args)
+	conn.commit()
+	cur.close()
+	conn.close()
+	return ""
+
+# Read test case details as string from database
+def getJSONStringForTestCases():
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM ivr_test_case_json")
+	for r in cur:
+		print("Test case ID from DB==>"+r[0])
+		print("Test case JSON from DB==>"+r[1])
+		Test_case_details=r[1]
+	cur.close()
+	conn.close()
+	return Test_case_details
 
 # Show testcase execution result in HTML page
 def ReturnTestCaseHTMLResult(testCaseIDToBePublished):	
