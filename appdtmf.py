@@ -13,19 +13,15 @@ import json
 from signalwire.rest import Client as signalwire_client
 from signalwire.voice_response import VoiceResponse
 
-# Declare global variables
-#asr_lang = os.environ["asr_lang"]
-#cli = os.environ["cli"]
-
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
 
 #Set key for session variables
 SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
-print("SECRET_KEY==>"+SECRET_KEY)
 app.secret_key=SECRET_KEY
 
 # Declare global variables
+#asr_lang = os.environ["asr_lang"]
 cli = os.environ["cli"]
 dnis = os.environ["dnis"]
 account_sid = os.environ["account_sid"]
@@ -35,10 +31,9 @@ databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
 
-#Homepage
+# Render Homepage to upload test cases
 @app.route('/TestCaseUpload')
 def load_TestCaseUploadPage():
-	print("I am here")
 	return render_template("FileUpload.html")
 
 # Invoking Uploading testcases to database method from HTML page
@@ -50,7 +45,7 @@ def submitFileToDB():
 		uploadTestCaseToDB(f.filename)
 	return readTestCasesFromDB()
 
-# Return status of upload to database in HTML page
+# Show uploaded test case in HTML page
 def readUploadedTestCaseFile(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
 		fileArray = []
