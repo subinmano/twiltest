@@ -215,7 +215,8 @@ def recording():
 	testCaseObject = getJSONStringForTestCases()
 	print ("testCaseObject==>"+currentStepCount)
 	testCaseJSON = json.loads(testCaseObject)
-	print ("test_case_id==>"+testCaseJSON["test_case_id"])
+	currentTestCaseid = testCaseJSON["test_case_id]
+	print ("Test Case ID ==>"+currentTestCaseid)
 	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
 	print("Action is =>" + action)
 	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
