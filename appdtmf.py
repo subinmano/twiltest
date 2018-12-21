@@ -203,7 +203,7 @@ def start():
 def record_welcome():
 	response = VoiceResponse()
 	currentTestCaseID=request.values.get("test_case_id", None)
-	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+currentTestCaseID)
+	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step=1&currentTestCaseID="+currentTestCaseID)
 	return str(response)
 
 # Twilio functions for record and TTS
