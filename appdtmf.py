@@ -110,7 +110,6 @@ def readTestCasesFromDB():
 def ExecuteTestCaseUpdateResult():
 	i=0
 	jsonStringForTestCase=getJSONStringForTestCases()
-	session['TestCaseString']=jsonStringForTestCase
 	print("jsonStringForTestCase==>"+jsonStringForTestCase)
 	#request.args["TestCaseToBeExecuted"]=jsonStringForTestCase
 	hostname = request.url_root
@@ -183,28 +182,29 @@ def ReturnTestCaseHTMLResult(testCaseIDToBePublished):
 def start():
 	#Get testcase details as string
 	session['testCaseObject'] = getJSONStringForTestCases()
-	print ("session['TestCaseString']==>"+session['TestCaseString'])
 	session['currentCount']=0
 	currentCount=0
 	testCaseObject = session['testCaseObject']
 	testCaseJSON = json.loads(testCaseObject)
-	action="place_call"
-	first_action = "place_call"
-	if "place_call" in first_action:
-		print(dnis, cli)
-		#dnis = testCaseJSON["steps"][currentCount][input]
-		# Twilio/Signalwire Account Sid and Auth Token
-		account_sid = os.environ["account_sid"]
-		auth_token = os.environ["auth_token"]
-		signalwire_space_url = os.environ["signalwire_space_url"]
-		#client = Client(account_sid, auth_token)
-		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
-		session['currentCount']=1
-		print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
-		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['0'], _external=True))
-	else:
-		print ("test case is not valid")
+	test_case_id = testCaseJSON["test_case_id"]
+	print(dnis, cli)
+	# Twilio/Signalwire Account Sid and Auth Token
+	account_sid = os.environ["account_sid"]
+	auth_token = os.environ["auth_token"]
+	signalwire_space_url = os.environ["signalwire_space_url"]
+	#client = Client(account_sid, auth_token)
+	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
+	print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
+	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
 	return ""
+
+# Record Welcome prompt
+@app.route("/record_welcome", methods=['GET', 'POST'])
+def record_welcome():
+	response = VoiceResponse()
+	currentTestCaseID=request.values.get("test_case_id", None)
+	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+currentTestCaseID)
+	return str(response)
 
 # Twilio functions for record and TTS
 @app.route("/recording", methods=['GET', 'POST'])
@@ -220,11 +220,6 @@ def recording():
 	print("Action is =>" + action)
 	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
 	print("currentStepCount==>"+str(currentStepCount)+"")
-	if "place_call" in action:
-		print("i am at first step")
-		currentStepCount=int(currentStepCount)+1
-		session['currentCount']=str(currentStepCount)
-		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "DTMF" in action:
 		print("i am at DTMF step")
 		currentStepCount=int(currentStepCount)+1
@@ -232,7 +227,6 @@ def recording():
 		#response.say(inputMsg)
 		print(inputMsg)
 		response.play(digits=inputMsg)
-		#response.pause(length=1)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "Hangup" in action:
 		response.hangup()
