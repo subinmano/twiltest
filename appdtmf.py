@@ -227,7 +227,7 @@ def recording():
 		#response.say(inputMsg)
 		print(inputMsg)
 		response.play(digits=inputMsg)
-		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid]))
+		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid]))
 	if "Hangup" in action:
 		response.hangup()
 	return str(response)
