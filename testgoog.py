@@ -35,16 +35,14 @@ def goog_speech2text(RecordingUrl):
 		content = audio_file.read()
 	audio = speech.types.RecognitionAudio(content=content)
 	#Set the configuration parameters of the audio file for Google STT
-	config = speech.types.RecognitionConfig
-		(
+	config = speech.types.RecognitionConfig(
 		encoding=speech.enums.RecognitionConfig.AudioEncoding.LINEAR16,
 		sample_rate_hertz=8000,
 		language_code='en-US'
 		# Enhanced models are only available to projects that opt in for audio data collection
         	use_enhanced=True,
 		# Specify the model for the enhanced model usage.
-		model='phone_call'
-		)
+		model='phone_call')
 	#Get the response from Google STT
 	response = client.recognize(config, audio)
 	for result in response.results:
