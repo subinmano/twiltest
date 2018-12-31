@@ -20,7 +20,7 @@ from google.cloud.speech import types
 app = Flask(__name__,template_folder='template')
 
 # Declare global variables
-
+credentials_dgf = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
 # This function calls Google STT and then returns recognition as text
 @app.route('/goog_speech2text', methods=['GET', 'POST'])
