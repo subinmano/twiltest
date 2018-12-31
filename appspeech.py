@@ -35,6 +35,7 @@ databasename = os.environ["databasename"]
 databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
+credentials_dgf = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
 # Render Homepage to upload test cases
 @app.route('/TestCaseUpload')
