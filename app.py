@@ -7,19 +7,17 @@ import sys
 import requests
 import json
 # Twilio Helper Library
-from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial
-
-# Declare global variables
-#asr_lang = os.environ["asr_lang"]
-#cli = os.environ["cli"]
+#from twilio.rest import Client
+#from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
+# Signalwire Helper lirary
+from signalwire.rest import Client as signalwire_client
+from signalwire.voice_response import VoiceResponse
 
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
 
 #Set key for session variables
 SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
-print("SECRET_KEY==>"+SECRET_KEY)
 app.secret_key=SECRET_KEY
 
 # Declare global variables
@@ -32,10 +30,9 @@ databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
 
-#Homepage
+# Render Homepage to upload test cases
 @app.route('/TestCaseUpload')
 def load_TestCaseUploadPage():
-	print("I am here")
 	return render_template("FileUpload.html")
 
 # Invoking Uploading testcases to database method from HTML page
@@ -45,9 +42,10 @@ def submitFileToDB():
 		f = request.files['fileToUpload']
 		f.save(f.filename)
 		uploadTestCaseToDB(f.filename)
+		uploadJSONTODB()
 	return readTestCasesFromDB()
 
-# Return status of upload to database in HTML page
+# Show uploaded test case in HTML page
 def readUploadedTestCaseFile(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
 		fileArray = []
@@ -111,14 +109,13 @@ def readTestCasesFromDB():
 def ExecuteTestCaseUpdateResult():
 	i=0
 	jsonStringForTestCase=getJSONStringForTestCases()
-	session['TestCaseString']=jsonStringForTestCase
 	print("jsonStringForTestCase==>"+jsonStringForTestCase)
 	#request.args["TestCaseToBeExecuted"]=jsonStringForTestCase
 	hostname = request.url_root
 	print(hostname)
 	return redirect(hostname + 'start', code=307)
 
-# Read test case data from database
+#Create Json string of Testcase details and insert to table
 def getJSONStringForTestCases():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
@@ -143,7 +140,26 @@ def getJSONStringForTestCases():
 		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[1]+'","input":"'+splittedTestCaseItem[2]+'"},'
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
-	return jsonTestCaseString
+	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"	
+	args = (testCaseid,jsonTestCaseString)
+	cur.execute(query,args)
+	conn.commit()
+	cur.close()
+	conn.close()
+	return ""
+
+# Read test case details as string from database
+def getJSONStringForTestCases():
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	cur.execute("SELECT * FROM ivr_test_case_json")
+	for r in cur:
+		print("Test case ID from DB==>"+r[0])
+		print("Test case JSON from DB==>"+r[1])
+		Test_case_details=r[1]
+	cur.close()
+	conn.close()
+	return Test_case_details
 
 # Show testcase execution result in HTML page
 def ReturnTestCaseHTMLResult(testCaseIDToBePublished):	
@@ -160,62 +176,70 @@ def ReturnTestCaseHTMLResult(testCaseIDToBePublished):
 	return fileContent
 
 #########################################Twilio recording code#############################################
-
 #Receive the POST request
 @app.route('/start', methods=['GET','POST'])
 def start():
-	#Get testcase details as string
+	# Get testcase details as string
 	session['testCaseObject'] = getJSONStringForTestCases()
-	print ("session['TestCaseString']==>"+session['TestCaseString'])
 	session['currentCount']=0
 	currentCount=0
 	testCaseObject = session['testCaseObject']
 	testCaseJSON = json.loads(testCaseObject)
-	action="place_call"
-	first_action = "place_call"
-	if "place_call" in first_action:
-		print(dnis, cli)
-		#dnis = testCaseJSON["steps"][currentCount][input]
-		# Twilio Account Sid and Auth Token
-		account_sid = os.environ["account_sid"]
-		auth_token = os.environ["auth_token"]
-		client = Client(account_sid, auth_token)
-		session['currentCount']=1
-		print("URL==>" + url_for('.recording', StepNumber=['1'], _external=True))
-		call = client.calls.create(to=dnis, from_=cli, url=url_for('.recording', StepNumber=['1'], _external=True))
-	else:
-		print ("test case is not valid")
+	test_case_id = testCaseJSON["test_case_id"]
+	print(dnis, cli)
+	# Twilio/Signalwire Account Sid and Auth Token
+	account_sid = os.environ["account_sid"]
+	auth_token = os.environ["auth_token"]
+	signalwire_space_url = os.environ["signalwire_space_url"]
+	#client = Client(account_sid, auth_token)
+	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
+	print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
+	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
 	return ""
 
-# Twilio functions for record and TTS
+# Record Welcome prompt
+@app.route("/record_welcome", methods=['GET', 'POST'])
+def record_welcome():
+	response = VoiceResponse()
+	currentTestCaseid=request.values.get("test_case_id", None)
+	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid]))
+	return str(response)
+
+# Twilio/Signalwire functions for record and TTS
 @app.route("/recording", methods=['GET', 'POST'])
 def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
+	print("CurrentStepCount is " + currentStepCount)
 	testCaseObject = getJSONStringForTestCases()
 	print ("testCaseObject==>"+currentStepCount)
 	testCaseJSON = json.loads(testCaseObject)
-	print ("test_case_id==>"+testCaseJSON["test_case_id"])
+	currentTestCaseid = testCaseJSON["test_case_id"]
+	print ("Test Case ID ==>"+currentTestCaseid)
 	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
+	print("Action is =>" + action)
 	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
 	print("currentStepCount==>"+str(currentStepCount)+"")
-	if action=='do_nothing':
-		currentStepCount=currentStepCount+1
-		session['currentCount']=str(currentStepCount)
-		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
 	if "Say" in action:
+		print("i am at TTS input step")
 		currentStepCount=int(currentStepCount)+1
 		session['currentCount']=str(currentStepCount)
+		print(inputMsg)
 		response.say(inputMsg)
-		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", recordingStatusCallback="/recording_stat?Step="+str(currentStepCount)+"&currentTestCaseID="+testCaseJSON["test_case_id"])
+		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid]))
 	if "Hangup" in action:
 		response.hangup()
 	return str(response)
 
 # Receive recordng metadata
-@app.route('/recording_stat', methods=['POST'])
+@app.route('/recording_stat', methods=['GET', 'POST'])
 def recording_stat():
+	print("I am at recording callback event")
 	req = request.get_json(silent=True, force=True)
+	StepNumber = request.values.get("Step", None)
+	print("StepNumber==>"+str(StepNumber))
+	testCaseID = request.values.get("currentTestCaseID", None)
+	print("testCaseID==>"+str(testCaseID))
 	AccountSid = request.values.get("AccountSid", None)
 	CallSid =  request.values.get("CallSid", None)
 	RecordingSid = request.values.get("RecordingSid", None)
@@ -225,9 +249,7 @@ def recording_stat():
 	RecordingChannels = request.values.get("RecordingChannels", None)
 	RecordingStartTime = request.values.get("RecordingStartTime", None)
 	RecordingSource	= request.values.get("RecordingSource", None)
-	StepNumber = request.values.get("Step", None)
-	testCaseID = request.values.get("currentTestCaseID", None)
-	updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
+	updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)	
 	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingSid==>"+RecordingSid+"\nRecordingUrl==>"+RecordingUrl+"\nRecordingDuration==>"+RecordingDuration+"\nStep number==>"+str(StepNumber))
 	return ""
