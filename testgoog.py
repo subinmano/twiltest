@@ -45,7 +45,7 @@ def goog_speech2text(RecordingUrl):
 		# Specify the model for the enhanced model usage.
 		model='phone_call'
 		)
-	#Get the response from Google STT	
+	#Get the response from Google STT
 	response = client.recognize(config, audio)
 	for result in response.results:
 		print('Transcript: {}'.format(result.alternatives[0].transcript))
