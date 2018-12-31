@@ -12,6 +12,10 @@ import json
 # Signalwire Helper lirary
 from signalwire.rest import Client as signalwire_client
 from signalwire.voice_response import VoiceResponse
+# Google Cloud SDK
+from google.oauth2 import service_account
+from google.cloud import speech
+
 
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
