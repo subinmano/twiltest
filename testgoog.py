@@ -29,7 +29,7 @@ def goog_speech2text(RecordingUrl):
 	service_account_info = json.loads(credentials_dgf)
 	credentials = service_account.Credentials.from_service_account_info(service_account_info)
 	# Create Google STT client
-    	client = speech.SpeechClient(credentials=credentials)
+	client = speech.SpeechClient(credentials=credentials)
 	#Pass the audio to be recognized by Google Speech-To-Text
 	with io.open(RecordingUrl, 'rb') as audio_file:
 		content = audio_file.read()
