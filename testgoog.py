@@ -35,7 +35,7 @@ def goog_speech2text():
 	client = speech.SpeechClient(credentials=credentials)
 	#Create temporary file
 	audiofileNameSplit = RecordingUrl.split("/")
-	audiofile = audiofileNameSplit[len(fileNameSplit)-1]
+	audiofile = audiofileNameSplit[len(audiofileNameSplit)-1]
 	urllib.request.urlretrieve(RecordingUrl, audiofile)
 	#Pass the audio to be recognized by Google Speech-To-Text
 	with io.open(audiofile, 'rb') as audio_file:
