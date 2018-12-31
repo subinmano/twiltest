@@ -1,4 +1,5 @@
 import os
+import io
 import pymysql
 from flask import Flask, request, Response, make_response, jsonify, url_for, redirect, session, render_template
 import sys
@@ -38,9 +39,9 @@ def goog_speech2text(RecordingUrl):
 	config = speech.types.RecognitionConfig(
 		encoding=speech.enums.RecognitionConfig.AudioEncoding.LINEAR16,
 		sample_rate_hertz=8000,
-		language_code='en-US'
+		language_code='en-US',
 		# Enhanced models are only available to projects that opt in for audio data collection
-        	use_enhanced=True,
+		use_enhanced=True,
 		# Specify the model for the enhanced model usage.
 		model='phone_call')
 	#Get the response from Google STT
