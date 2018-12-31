@@ -15,6 +15,8 @@ from signalwire.voice_response import VoiceResponse
 # Google Cloud SDK
 from google.oauth2 import service_account
 from google.cloud import speech
+from google.cloud.speech import enums
+from google.cloud.speech import types
 
 
 #Initiate Flask app
