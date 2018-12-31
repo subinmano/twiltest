@@ -220,12 +220,15 @@ def recording():
 	print("Action is =>" + action)
 	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
 	print("currentStepCount==>"+str(currentStepCount)+"")
-	if "Say" in action:
-		print("i am at TTS input step")
+	#if "Say" in action:
+	if "DTMF" in action:
+		#print("i am at TTS input step")
+		print("i am at DTMF input step")
 		currentStepCount=int(currentStepCount)+1
 		session['currentCount']=str(currentStepCount)
 		print(inputMsg)
-		response.say(inputMsg)
+		response.play(digits=inputMsg)
+		#response.say(inputMsg)
 		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid]))
 	if "Hangup" in action:
 		response.hangup()
@@ -249,18 +252,58 @@ def recording_stat():
 	RecordingChannels = request.values.get("RecordingChannels", None)
 	RecordingStartTime = request.values.get("RecordingStartTime", None)
 	RecordingSource	= request.values.get("RecordingSource", None)
-	updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)	
+	Recognized_text = goog_speech2text(RecordingUrl)
+	#updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
+	updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
 	print("testCaseID==>"+str(testCaseID))
-	print ("RecordingSid==>"+RecordingSid+"\nRecordingUrl==>"+RecordingUrl+"\nRecordingDuration==>"+RecordingDuration+"\nStep number==>"+str(StepNumber))
+	print ("RecordingSid==>"+RecordingSid+"\nRecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
 	return ""
 
+# This function calls Google STT and then returns recognition as text
+#@app.route('/goog_speech2text', methods=['GET', 'POST'])
+def goog_speech2text(RecordingUrl):
+	#Generate Google STT Credentials
+	service_account_info = json.loads(credentials_dgf)
+	credentials = service_account.Credentials.from_service_account_info(service_account_info)
+	# Create Google STT client
+    	client = speech.SpeechClient(credentials=credentials)
+	#Pass the audio to be recognized by Google Speech-To-Text
+	with io.open(RecordingUrl, 'rb') as audio_file:
+		content = audio_file.read()
+	audio = speech.types.RecognitionAudio(content=content)
+	#Set the configuration parameters of the audio file for Google STT
+	config = speech.types.RecognitionConfig
+		(
+		encoding=speech.enums.RecognitionConfig.AudioEncoding.LINEAR16,
+		sample_rate_hertz=8000,
+		language_code='en-US'
+		# Enhanced models are only available to projects that opt in for audio data collection
+        	use_enhanced=True,
+		# Specify the model for the enhanced model usage.
+		model='phone_call'
+		)
+	#Get the response from Google STT	
+	response = client.recognize(config, audio)
+	for result in response.results:
+		print('Transcript: {}'.format(result.alternatives[0].transcript))
+		recognized_text = result.alternatives[0].transcript
+	
+	#This is for getting alternatives from recognized result
+	#for i, result in enumerate(response.results):
+        #alternative = result.alternatives[0]
+	#print('-' * 20)
+        #print('First alternative of result {}'.format(i))
+        #print('Transcript: {}'.format(alternative.transcript))
+	
+	return recognized_text
+	
 # Update recording metadata to Database
-def updateResultToDB(recordingURL,recordingDuration,testcaseID,testCaseStep):
+def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	print(str(recordingURL)+"||"+str(recordingDuration)+"||"+testcaseID+"||"+testCaseStep)
-	query = "UPDATE  ivr_test_case_master set recording_url = %s, recording_duration = %s where testcaseid=%s and testcasestepid = %s"
-	args = (recordingURL,str(recordingDuration),str(testcaseID),testCaseStep)
+	print(str(recordingURL)+"||"+str(recognizedText)+"||"+testcaseID+"||"+testCaseStep)
+	query = "UPDATE ivr_test_case_master set recording_url = %s, recognized_text = %s where testcaseid=%s and testcasestepid = %s"
+	args = (recordingURL,str(recognizedText),str(testcaseID),testCaseStep)
 	cur.execute(query,args)
 	print("Rows Affected==>"+str(cur.rowcount))
 	conn.commit()
