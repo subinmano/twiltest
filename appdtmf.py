@@ -234,7 +234,7 @@ def recording():
 	return str(response)
 
 # Receive recordng metadata
-@app.route('/recording_stat', methods=['POST'])
+@app.route('/recording_stat', methods=['GET', 'POST'])
 def recording_stat():
 	print("I am at recording callback event")
 	StepNumber = request.values.get("Step", None)
