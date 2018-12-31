@@ -1,1 +1,1 @@
-web: python appdtmf.py
+web: python testgoog.py
