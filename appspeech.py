@@ -6,6 +6,7 @@ from flask import Flask, request, Response, make_response, jsonify, url_for, red
 import sys
 import requests
 import json
+import urllib
 # Twilio Helper Library
 #from twilio.rest import Client
 #from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
@@ -274,8 +275,12 @@ def goog_speech2text(RecordingUrl):
 	credentials = service_account.Credentials.from_service_account_info(service_account_info)
 	# Create Google STT client
     	client = speech.SpeechClient(credentials=credentials)
+	#Create temporary file
+	audiofileNameSplit = RecordingUrl.split("/")
+	audiofile = audiofileNameSplit[len(audiofileNameSplit)-1]
+	urllib.request.urlretrieve(RecordingUrl, audiofile)
 	#Pass the audio to be recognized by Google Speech-To-Text
-	with io.open(RecordingUrl, 'rb') as audio_file:
+	with io.open(audiofile, 'rb') as audio_file:
 		content = audio_file.read()
 	audio = speech.types.RecognitionAudio(content=content)
 	#Set the configuration parameters of the audio file for Google STT
