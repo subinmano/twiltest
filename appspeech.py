@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os
+import io
 import pymysql
 from flask import Flask, request, Response, make_response, jsonify, url_for, redirect, session, render_template
 import sys
