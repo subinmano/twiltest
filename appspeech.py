@@ -72,15 +72,8 @@ def uploadTestCaseToDB(uploadedFileName):
 			inputpause = splittedTestCaseLine[5]
 			expectedValue = splittedTestCaseLine[6]
 			promptDuration = splittedTestCaseLine[7]
-			actualValue = splittedTestCaseLine[8]
-			uploadedDate = splittedTestCaseLine[9]
-			executionStatus = splittedTestCaseLine[10]
-			executionDatetime = splittedTestCaseLine[11]
-			recognitionConfidence = splittedTestCaseLine[12]
-			recordingUrl = splittedTestCaseLine[13]
-			recordingDuration = splittedTestCaseLine[14]
-			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration,actual_value,uploaded_date,execution_status,execution_datetime,recognition_confidence,recording_url,recording_duration) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"	
-			args = (caseID,caseStepID,action,inputType,inputValue,inputpause,expectedValue,promptDuration,actualValue,uploadedDate,executionStatus,executionDatetime,recognitionConfidence,recordingUrl,recordingDuration)
+			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration) values (%s,%s,%s,%s,%s,%s,%s,%s)"	
+			args = (caseID,caseStepID,action,inputType,inputValue,inputpause,expectedValue,promptDuration)
 			if i!=0:
 				cur.execute(query,args)
 			else:
