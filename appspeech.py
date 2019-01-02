@@ -20,12 +20,11 @@ from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 
-
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
 
 #Set key for session variables
-SECRET_KEY = os.environ.get("SECRET_KEY", default=None)
+SECRET_KEY = os.environ["SECRET_KEY", default=None]
 app.secret_key=SECRET_KEY
 
 # Declare global variables
@@ -37,14 +36,14 @@ databasename = os.environ["databasename"]
 databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
-credentials_dgf = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+credentials_dgf = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
 
 # Render Homepage to upload test cases
 @app.route('/TestCaseUpload')
 def load_TestCaseUploadPage():
 	return render_template("FileUpload.html")
 
-# Invoking Uploading testcases to database method from HTML page
+# Receive post request from HTML and call helper functions
 @app.route('/UploadTestCaseToDB',methods = ['POST'])
 def submitFileToDB():
 	if request.method == 'POST':
@@ -54,20 +53,7 @@ def submitFileToDB():
 		uploadJSONTODB()
 	return readTestCasesFromDB()
 
-# Show uploaded test case in HTML page
-def readUploadedTestCaseFile(uploadedFileName):
-	with open(uploadedFileName, "r") as ins:
-		fileArray = []
-		fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180">
-  		<col width="380"><col width="280"><tr> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
-		for line in ins:
-			splittedTestCaseLine = line.split(",")
-			fileArray.append(line)
-			fileContent =  fileContent + '<tr><td>'+splittedTestCaseLine[0]+'</td><td>'+splittedTestCaseLine[1]+'</td></tr>'
-		fileContent =  fileContent + '</body></html>'
-		return fileContent
-	
-# Upload test case details to Database
+# Upload test case information to Database
 def uploadTestCaseToDB(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
 		print(databasehost, databaseusername, databasepassword, databasename)
@@ -79,10 +65,19 @@ def uploadTestCaseToDB(uploadedFileName):
 			caseID =splittedTestCaseLine[0]
 			caseStepID = splittedTestCaseLine[1]
 			action=splittedTestCaseLine[2]
-			inputValue = splittedTestCaseLine[3]
-			expectedValue = splittedTestCaseLine[4]
-			actualValue = splittedTestCaseLine[5]
-			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_value,expected_value,actual_value) values (%s,%s,%s,%s,%s,%s)"	
+			inputType = splittedTestCaseLine[3]
+			inputValue = splittedTestCaseLine[4]
+			inputpause = splittedTestCaseLine[5]
+			expectedValue = splittedTestCaseLine[6]
+			promptDuration = splittedTestCaseLine[7]
+			actualValue = splittedTestCaseLine[8]
+			uploadedDate = splittedTestCaseLine[9]
+			executionStatus = splittedTestCaseLine[10]
+			executionDatetime = splittedTestCaseLine[11]
+			recognitionConfidence = splittedTestCaseLine[12]
+			recordingUrl = splittedTestCaseLine[13]
+			recordingDuration = splittedTestCaseLine[14]
+			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_typr,input_value,pause_break,expected_value,expected_prompt_duration,actual_value,uploaded_date,execution_status,execution_datetime,recognition_confidence,recording_url,recording_duration) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"	
 			args = (caseID,caseStepID,action,inputValue,expectedValue,actualValue)
 			if i!=0:
 				cur.execute(query,args)
@@ -98,6 +93,19 @@ def validateString(testCaseItem):
 	if not testCaseItem: 
 		return " "
 	return testCaseItem
+
+# Display uploaded test case in HTML page
+def readUploadedTestCaseFile(uploadedFileName):
+	with open(uploadedFileName, "r") as ins:
+		fileArray = []
+		fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180">
+  		<col width="380"><col width="280"><tr> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
+		for line in ins:
+			splittedTestCaseLine = line.split(",")
+			fileArray.append(line)
+			fileContent =  fileContent + '<tr><td>'+splittedTestCaseLine[0]+'</td><td>'+splittedTestCaseLine[1]+'</td></tr>'
+		fileContent =  fileContent + '</body></html>'
+		return fileContent
 
 #Get test case details from Database
 def readTestCasesFromDB():
