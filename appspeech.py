@@ -308,7 +308,7 @@ def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	print(str(recordingURL)+"||"+str(recognizedText)+"||"+testcaseID+"||"+testCaseStep)
-	query = "UPDATE ivr_test_case_master set recording_url = %s, recognized_text = %s where testcaseid=%s and testcasestepid = %s"
+	query = "UPDATE ivr_test_case_master set recording_url = %s, actual_value = %s where testcaseid=%s and testcasestepid = %s"
 	args = (recordingURL,str(recognizedText),str(testcaseID),testCaseStep)
 	cur.execute(query,args)
 	print("Rows Affected==>"+str(cur.rowcount))
