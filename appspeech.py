@@ -107,7 +107,7 @@ def readTestCasesFromDB():
 @app.route('/ExecuteTestCase',methods = ['POST'])
 def ExecuteTestCaseUpdateResult():
 	i=0
-	jsonStringForTestCase=createJSONStringForTestCases()
+	jsonStringForTestCase=getJSONStringForTestCases()
 	print("jsonStringForTestCase==>"+jsonStringForTestCase)
 	#request.args["TestCaseToBeExecuted"]=jsonStringForTestCase
 	hostname = request.url_root
