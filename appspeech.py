@@ -188,7 +188,6 @@ def start():
 	dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 	print(dnis, cli)
 	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
-	print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
 	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
 	return ""
 
