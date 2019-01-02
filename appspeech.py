@@ -181,11 +181,11 @@ def start():
 	# Get testcase details as string
 	session['testCaseObject'] = getJSONStringForTestCases()
 	session['currentCount']=0
-	currentCount=0
+	currentStepCount=0
 	testCaseObject = session['testCaseObject']
 	testCaseJSON = json.loads(testCaseObject)
 	test_case_id = testCaseJSON["test_case_id"]
-	dnis = testCaseJSON["steps"][int(currentStepCount)]["input_value"]
+	dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 	print(dnis, cli)
 	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 	print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
