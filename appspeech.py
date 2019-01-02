@@ -260,7 +260,7 @@ def recording_stat():
 	#updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
 	updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
 	print("testCaseID==>"+str(testCaseID))
-	print ("RecordingSid==>"+RecordingSid+"\nRecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
+	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
 	return ""
 
 # This function calls Google STT and then returns recognition as text
