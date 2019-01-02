@@ -118,7 +118,7 @@ def ExecuteTestCaseUpdateResult():
 def createJSONStringForTestCases():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_reak FROM ivr_test_case_master")
+	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break FROM ivr_test_case_master")
 	testCaseid=""
 	testCaseStepsCount=""
 	testCaseStepsList=[]
