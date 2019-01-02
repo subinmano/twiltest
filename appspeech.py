@@ -62,6 +62,7 @@ def uploadTestCaseToDB(uploadedFileName):
 		cur = conn.cursor()
 		i=0
 		for line in ins:
+			print("line==>"+line)
 			splittedTestCaseLine = line.split(",")
 			caseID =splittedTestCaseLine[0]
 			caseStepID = splittedTestCaseLine[1]
