@@ -197,6 +197,7 @@ def start():
 def record_welcome():
 	response = VoiceResponse()
 	currentTestCaseid=request.values.get("test_case_id", None)
+	print("Reccalbackurl=> " + url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _external=True))
 	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _external=True),recordingStatusCallbackMethod="POST")
 	return str(response)
 
