@@ -24,7 +24,7 @@ from google.cloud.speech import types
 app = Flask(__name__,template_folder='template')
 
 #Set key for session variables
-SECRET_KEY = os.environ["SECRET_KEY", default=None]
+SECRET_KEY = os.environ["SECRET_KEY"]
 app.secret_key=SECRET_KEY
 
 # Declare global variables
