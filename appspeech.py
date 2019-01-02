@@ -29,9 +29,10 @@ app.secret_key=SECRET_KEY
 
 # Declare global variables
 cli = os.environ["cli"]
-dnis = os.environ["dnis"]
+#dnis = os.environ["dnis"]
 account_sid = os.environ["account_sid"]
 auth_token = os.environ["auth_token"]
+signalwire_space_url = os.environ["signalwire_space_url"]
 databasename = os.environ["databasename"]
 databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
@@ -94,38 +95,25 @@ def validateString(testCaseItem):
 		return " "
 	return testCaseItem
 
-# Display uploaded test case in HTML page
-def readUploadedTestCaseFile(uploadedFileName):
-	with open(uploadedFileName, "r") as ins:
-		fileArray = []
-		fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180">
-  		<col width="380"><col width="280"><tr> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
-		for line in ins:
-			splittedTestCaseLine = line.split(",")
-			fileArray.append(line)
-			fileContent =  fileContent + '<tr><td>'+splittedTestCaseLine[0]+'</td><td>'+splittedTestCaseLine[1]+'</td></tr>'
-		fileContent =  fileContent + '</body></html>'
-		return fileContent
-
-#Get test case details from Database
+#Get test case details from Database and display in HTML page
 def readTestCasesFromDB():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
-	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180"><col width="380"><col width="280"><tr><th>Action </th> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
+	fileContent = """<html><title>IVR test case Execution</title><body><table border="1"><col width="180"><col width="380"><col width="280"><tr><th>Test Case ID</th><th>Test Case Step ID</th><th>Action </th> <th>Input Type </th> <th>Input Value </th><th>Pause </th> <th>Expected value</th><th>Prompt Duration </th><th>Actual Prompt</th><th>Confidence</th><th>Status</th><th>Recording URL</th><th>Recording duration</th></tr>"""
 	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td></tr>'
+		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[12])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[13])+'</td><td>'+validateString(r[14])+'</td></tr>'
 		#print("r[1]|"+validateString(r[1])+"r[2]|"+validateString(r[2])+"r[3]|"+validateString(r[3])+"r[4]|"+validateString(r[4])+"r[5]|"+validateString(r[5])+"r[6]|"+validateString(r[6])+"r[7]|"+validateString(r[7])+"r[8]|"+validateString(r[8])+"r[9]|"+validateString(r[9]))
 	cur.close()
 	conn.close()
-	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data">	<input type="submit" value="Execute Test cases" name="submit"></form></body></html>'
+	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test cases" name="submit"></form></body></html>'
 	return fileContent
 
 # Submit POST request 
 @app.route('/ExecuteTestCase',methods = ['POST'])
 def ExecuteTestCaseUpdateResult():
 	i=0
-	jsonStringForTestCase=getJSONStringForTestCases()
+	jsonStringForTestCase=createJSONStringForTestCases()
 	print("jsonStringForTestCase==>"+jsonStringForTestCase)
 	#request.args["TestCaseToBeExecuted"]=jsonStringForTestCase
 	hostname = request.url_root
@@ -133,19 +121,19 @@ def ExecuteTestCaseUpdateResult():
 	return redirect(hostname + 'start', code=307)
 
 #Create Json string of Testcase details and insert to table
-def getJSONStringForTestCases():
+def createJSONStringForTestCases():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT * FROM ivr_test_case_master")
+	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_reak FROM ivr_test_case_master")
 	testCaseid=""
 	testCaseStepsCount=""
 	testCaseStepsList=[]
 	i=0
 	for r in cur:
-		print("R0==>"+r[0]+"R1==>"+r[1]+"r[2]==>"+r[2]+"r[3]==>"+r[3])
+		print("R0==>"+r[0]+"R1==>"+r[1]+"r[2]==>"+r[2]+"r[3]==>"+r[3]+"r[4]==>"+r[4])
 		testCaseid=r[0]
 		i=i+1
-		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3])
+		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4])
 	testCaseStepsCount=i
 	print("testCaseid==>"+testCaseid)
 	print("testCaseStepsCount==>"+str(testCaseStepsCount))
@@ -154,10 +142,10 @@ def getJSONStringForTestCases():
 	for testCaseStepItem in testCaseStepsList:
 		testCaseStepItem=testCaseStepItem.replace('"','')
 		splittedTestCaseItem=testCaseStepItem.split("|")
-		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[1]+'","input":"'+splittedTestCaseItem[2]+'"},'
+		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[1]+'","input_type":"'+splittedTestCaseItem[2]+',"input_value":"'+splittedTestCaseItem[3]+'","pause":"'+splittedTestCaseItem[4]+'"},'
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
-	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"	
+	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"
 	args = (testCaseid,jsonTestCaseString)
 	cur.execute(query,args)
 	conn.commit()
@@ -183,13 +171,13 @@ def ReturnTestCaseHTMLResult(testCaseIDToBePublished):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
-	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"> <col width="180"><col width="380"><col width="280"><tr> <th>Input value </th> <th>Expected value</th><th>Outcome</th></tr>"""
+	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"><col width="180"><col width="380"><col width="280"><tr><th>Test Case ID</th><th>Test Case Step ID</th><th>Action </th> <th>Input Type </th> <th>Input Value </th><th>Pause </th> <th>Expected value</th><th>Prompt Duration </th><th>Actual Prompt</th><th>Confidence</th><th>Status</th><th>Recording URL</th><th>Recording duration</th></tr>"""
 	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td></tr>'
+		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[12])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[13])+'</td><td>'+validateString(r[14])+'</td></tr>'
 		print("R3==>"+r[3])
 	cur.close()
 	conn.close()
-	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data"> <input type="submit" value="Execute Test cases" name="submit"></form></body></html>'
+	fileContent = fileContent + '</body></html>'
 	return fileContent
 
 #########################################Twilio recording code#############################################
@@ -203,12 +191,8 @@ def start():
 	testCaseObject = session['testCaseObject']
 	testCaseJSON = json.loads(testCaseObject)
 	test_case_id = testCaseJSON["test_case_id"]
+	dnis = testCaseJSON["steps"][int(currentStepCount)]["input_value"]
 	print(dnis, cli)
-	# Twilio/Signalwire Account Sid and Auth Token
-	account_sid = os.environ["account_sid"]
-	auth_token = os.environ["auth_token"]
-	signalwire_space_url = os.environ["signalwire_space_url"]
-	#client = Client(account_sid, auth_token)
 	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 	print("URL==>" + url_for('.recording', StepNumber=['0'], _external=True))
 	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
@@ -235,18 +219,27 @@ def recording():
 	print ("Test Case ID ==>"+currentTestCaseid)
 	action = testCaseJSON["steps"][int(currentStepCount)]["action"]
 	print("Action is =>" + action)
-	inputMsg = testCaseJSON["steps"][int(currentStepCount)]["input"]
-	print("currentStepCount==>"+str(currentStepCount)+"")
-	#if "Say" in action:
-	if "DTMF" in action:
-		#print("i am at TTS input step")
-		print("i am at DTMF input step")
-		currentStepCount=int(currentStepCount)+1
-		session['currentCount']=str(currentStepCount)
-		print(inputMsg)
-		response.play(digits=inputMsg)
-		#response.say(inputMsg)
-		response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid]))
+	input_type = testCaseJSON["steps"][int(currentStepCount)]["input_type"]
+	print("Input Type is =>" + input_type)
+	input_value = testCaseJSON["steps"][int(currentStepCount)]["input_value"]
+	print("Input Value is =>" + input_value)
+	pause = testCaseJSON["steps"][int(currentStepCount)]["pause"]
+	if pause!="":
+		response.pause(length=int(pause))
+		print("I have paused")
+	if "Reply" in action:
+		if "DTMF" in input_type:
+			print("i am at DTMF input step")
+			currentStepCount=int(currentStepCount)+1
+			session['currentCount']=str(currentStepCount)
+			response.play(digits=input_value)
+			response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid]))
+		if "Say" in input_type:
+			print("i am at Say input step")
+			currentStepCount=int(currentStepCount)+1
+			session['currentCount']=str(currentStepCount)
+			response.say(input_value, voice="alice", language="en-US")
+			response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid]))
 	if "Hangup" in action:
 		response.hangup()
 	return str(response)
