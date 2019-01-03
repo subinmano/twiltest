@@ -9,11 +9,8 @@ import requests
 import json
 import urllib
 # Twilio Helper Library
-#from twilio.rest import Client
-#from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
-# Signalwire Helper lirary
-from signalwire.rest import Client as signalwire_client
-from signalwire.voice_response import VoiceResponse
+from twilio.rest import Client
+from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
 # Google Cloud SDK
 from google.oauth2 import service_account
 from google.cloud import speech
@@ -187,7 +184,7 @@ def start():
 	test_case_id = testCaseJSON["test_case_id"]
 	dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 	print(dnis, cli)
-	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
+	client = Client(account_sid, auth_token)
 	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
 	return ""
 
@@ -197,8 +194,7 @@ def record_welcome():
 	response = VoiceResponse()
 	currentTestCaseid=request.values.get("test_case_id", None)
 	print("Reccalbackurl=> " + url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True))
-	#response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
-	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback="https://twilivrtest.herokuapp.com/recording_stat",recordingStatusCallbackMethod="POST")
+	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	return str(response)
 
 # Twilio/Signalwire functions for record and TTS
