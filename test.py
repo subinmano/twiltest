@@ -7,11 +7,11 @@ app = Flask(__name__,template_folder='template')
 
 @app.route('/Testjiwer',methods = ['POST'])
 def Testjiwer():
-  ground_truth = "hello world"
-  hypothesis = "hello duck"
-  error = wer(ground_truth, hypothesis)
-  print("Error rate is :"+int(error))
-  return ""
+	ground_truth = "hello world"
+	hypothesis = "hello duck"
+	error = wer(ground_truth, hypothesis)
+	print(error)
+	return ""
 
 if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
