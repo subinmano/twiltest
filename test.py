@@ -8,7 +8,7 @@ app = Flask(__name__,template_folder='template')
 @app.route('/Testjiwer',methods = ['POST'])
 def Testjiwer():
 	ground_truth = "Thanks for calling ABC Bank. Press 1 for Banking, for credit card press 2"
-	hypothesis = "for calling ABC Bank Press 1 for banking for credit card press 2"
+	hypothesis = "Than for call ABC Bank Press 1 four banking for credit card press 2"
 	error = wer(ground_truth, hypothesis)
 	print(error)
 	return ""
