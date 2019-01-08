@@ -10,7 +10,7 @@ def Testjiwer():
   ground_truth = "hello world"
   hypothesis = "hello duck"
   error = wer(ground_truth, hypothesis)
-  print("Error rate is :"+error)
+  print("Error rate is :"+int(error))
   return ""
 
 if __name__ == '__main__':
