@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, Response, make_response, jsonify, url_for, redirect, session, render_template
 from jiwer import wer
+from difflib import SequenceMatcher
 
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
@@ -10,7 +11,8 @@ def Testjiwer():
 	ground_truth = "Thanks for calling ABC Bank. Press 1 for Banking, for credit card press 2"
 	hypothesis = "Than for call ABC Bank Press 1 four banking for credit card press 2"
 	error = wer(ground_truth, hypothesis)
-	print(error)
+	ratio = SequenceMatcher(None, ground_truth, hypothesis).ratio()
+	print(error, ratio)
 	return ""
 
 if __name__ == '__main__':
