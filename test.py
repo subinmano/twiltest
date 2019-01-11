@@ -9,7 +9,7 @@ app = Flask(__name__,template_folder='template')
 @app.route('/Testjiwer',methods = ['POST'])
 def Testjiwer():
 	ground_truth = "Thanks for calling ABC Bank. Press 1 for Banking, for credit card press 2"
-	hypothesis = "Than for call ABC Bank Press 1 four banking for credit card press 2"
+	hypothesis = "Thanks for calling ABC Bank Press 1 four banking four credit card press 2"
 	error = wer(ground_truth, hypothesis)
 	ratio = SequenceMatcher(None, ground_truth, hypothesis).ratio()
 	print(error, ratio)
