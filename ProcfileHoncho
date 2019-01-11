@@ -1,2 +1,2 @@
-web: python testcaseupload.py
-web: gunicorn recording:app
+python testcaseupload.py
+gunicorn recording:app
