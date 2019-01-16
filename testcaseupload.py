@@ -127,7 +127,7 @@ def ExecuteTestCaseUpdateResult():
 	testcaseid = request.values.get("TestCaseId", None)
 	hostname = request.url_root
 	print(hostname)
-	return redirect(hostname + 'start?TestCaseId='+testcaseid+'' + , code=307)
+	return redirect(hostname + 'start?TestCaseId='+testcaseid+'', code=307)
 
 # Show testcase execution result in HTML page
 def ReturnTestCaseHTMLResult(testCaseIDToBePublished):	
