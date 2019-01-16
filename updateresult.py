@@ -26,8 +26,8 @@ def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
 		expected_confidence = r[1]
 	print(str(recordingURL)+"||"+str(recognizedText)+"||"+testcaseID+"||"+testCaseStep+"||"+expected_value+"||"+expected_confidence)
 	#error = wer(ground_truth, hypothesis)
-	actual_confidence = Round(SequenceMatcher(None, expected_value, recognizedText).ratio()), 2)
-	print(confidence)
+	actual_confidence = round((SequenceMatcher(None, expected_value, recognizedText).ratio()), 2)
+	print(actual_confidence)
 	if actual_confidence<expected_confidence:
 		result = "Fail"
 	else:
