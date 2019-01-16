@@ -114,8 +114,9 @@ def recording_stat():
 	RecordingStartTime = request.values.get("RecordingStartTime", None)
 	RecordingSource	= request.values.get("RecordingSource", None)
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
-	#updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
-	updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
+	if Recognized_text:
+		#updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
 	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
 	return ""
