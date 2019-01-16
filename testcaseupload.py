@@ -53,8 +53,9 @@ def uploadTestCaseToDB(uploadedFileName):
 			inputpause = TestCaseLine[5]
 			expectedValue = TestCaseLine[6]
 			promptDuration = TestCaseLine[7]
-			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration) values (%s,%s,%s,%s,%s,%s,%s,%s)"	
-			args = (caseID,caseStepID,action,inputType,inputValue,inputpause,expectedValue,promptDuration)
+			expectedconfidence = TestCaseLine[8]
+			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"	
+			args = (caseID,caseStepID,action,inputType,inputValue,inputpause,expectedValue,promptDuration,expectedconfidence)
 			if i!=0:
 				cur.execute(query,args)
 			else:
@@ -64,7 +65,7 @@ def uploadTestCaseToDB(uploadedFileName):
 		conn.close()
 		return ""
   
-  #Get test case details from Database and display in HTML page
+#Get test case details from Database and display in HTML page
 def readTestCasesFromDB():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
@@ -72,8 +73,8 @@ def readTestCasesFromDB():
 	fileContent = """<html><title>IVR test case Execution</title><body><table border="1"><col width="180"><col width="380"><col width="280"><tr><th>Test Case ID</th><th>Test Case Step ID</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected value</th><th>Prompt Duration</th><th>Actual Prompt</th><th>Confidence</th><th>Status</th><th>Recording URL</th><th>Recording duration</th></tr>"""
 	testcaseid=""
 	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[12])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[13])+'</td><td>'+validateString(r[14])+'</td></tr>'
-	testcaseid=r[0]
+		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td></tr>'
+		testcaseid=r[0]
 	cur.close()
 	conn.close()
 	fileContent = fileContent +'<form action="/ExecuteTestCase?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form></body></html>'
