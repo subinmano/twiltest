@@ -41,7 +41,7 @@ def start():
 	testcaseid = request.values.get("TestCaseId", None)
 	filename = testcaseid + ".json"
 	with open(filename) as json_file:
-		testCaseJSON = json.loads(json_file)
+		testCaseJSON = json.load(json_file)
 		test_case_id = testCaseJSON["test_case_id"]
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 		print(dnis, cli)
@@ -56,7 +56,8 @@ def start():
 def record_welcome():
 	response = VoiceResponse()
 	currentTestCaseid=request.values.get("test_case_id", None)
-	response.record(trim="trim-silence", action="/recording?StepNumber=1", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+	#response.record(trim="trim-silence", action="/recording?StepNumber=1,TestCaseId=currentTestCaseid", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	return str(response)
 
 # Twilio/Signalwire functions for record and TTS
@@ -64,9 +65,12 @@ def record_welcome():
 def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
+	testcaseid = request.values.get("TestCaseId", None)
+	print("testcaseid is " + testcaseid)
+	filename = testcaseid + ".json"
 	print("CurrentStepCount is " + currentStepCount)
-	with open('details.json') as json_file:
-		testCaseJSON = json.loads(json_file)
+	with open(filename) as json_file:
+		testCaseJSON = json.load(json_file)
 		currentTestCaseid = testCaseJSON["test_case_id"]
 		print ("Test Case ID ==>"+currentTestCaseid)
 		action = testCaseJSON["steps"][int(currentStepCount)]["action"]
