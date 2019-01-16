@@ -18,7 +18,7 @@ databasepassword = os.environ["databasepassword"]
 def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	query = "SELECT expected_value, expected_confidence FROM ivr_test_case_master" where testcaseid = %s and testcasestepid = %s"
+	query = "SELECT expected_value, expected_confidence FROM ivr_test_case_master where testcaseid = %s and testcasestepid = %s"
 	args = (str(testcaseID),testCaseStep)
 	cur.execute(query,args)
 	for r in cur:
