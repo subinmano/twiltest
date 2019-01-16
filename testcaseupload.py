@@ -138,8 +138,9 @@ def ExecuteTestCaseUpdateResult():
 def ShowTestResult():
 	testcaseid = request.values.get("TestCaseId", None)
 	filename = testcaseid + ".json"
+	print("Filename is="+ filename)
 	with open(filename) as json_file:
-		testCaseJSON = json.loads(json_file)
+		testCaseJSON = json.load(json_file)
 		test_case_id = testCaseJSON["test_case_id"]
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 	print("Read from Json File=>"+test_case_id, dnis)
