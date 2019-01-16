@@ -26,12 +26,12 @@ def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
 		expected_confidence = r[1]
 	print(str(recordingURL)+"||"+str(recognizedText)+"||"+testcaseID+"||"+testCaseStep+"||"+expected_value+"||"+expected_confidence)
 	#error = wer(ground_truth, hypothesis)
-	confidence = 1-(SequenceMatcher(None, expected_value, recognizedText).ratio())
+	actual_confidence = Round(SequenceMatcher(None, expected_value, recognizedText).ratio()), 2)
 	print(confidence)
-	if confidence > expected_confidence:
-		result = "pass"
+	if actual_confidence<expected_confidence:
+		result = "Fail"
 	else:
-		result = "fail"
+		result = "Pass"
 	query = "UPDATE ivr_test_case_master set recording_url = %s, actual_value = %s, result = %s where testcaseid=%s and testcasestepid = %s"
 	args = (recordingURL,str(recognizedText), str(result), str(testcaseID),testCaseStep)
 	cur.execute(query,args)
