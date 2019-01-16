@@ -121,8 +121,6 @@ def createJSONStringForTestCases():
 	filename = testCaseid + ".json"
 	f = open(filename, "w")
 	f.write(jsonTestCaseString)
-	filesize = os.path.getsize(filename)
-	print(filesize)
 	return ""
 
 # Submit POST request
@@ -137,12 +135,6 @@ def ExecuteTestCaseUpdateResult():
 @app.route('/ShowTestResult', methods=['GET','POST'])
 def ShowTestResult():
 	testcaseid = request.values.get("TestCaseId", None)
-	filename = testcaseid + ".json"
-	print("Filename is="+ filename)
-	with open(filename) as json_file:
-		testCaseJSON = json.load(json_file)
-		test_case_id = testCaseJSON["test_case_id"]
-	print("Read from Json File=>"+test_case_id)
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
