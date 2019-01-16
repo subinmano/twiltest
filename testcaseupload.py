@@ -121,6 +121,8 @@ def createJSONStringForTestCases():
 	filename = testCaseid + ".json"
 	f = open(filename, "w")
 	f.write(jsonTestCaseString)
+	filesize = os.path.getsize(filename)
+	print(filesize)	
 	return ""
 
 # Submit POST request
