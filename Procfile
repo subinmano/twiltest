@@ -1,1 +1,1 @@
-web: python testcaseupload.py
+web: python record.py
