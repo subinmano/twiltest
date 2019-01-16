@@ -138,7 +138,7 @@ def ShowTestResult():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
-	args = (str(TestCaseId))
+	args = (str(testcaseid))
 	cur.execute(query,args)
 	fileContent = """<html><title>IVR test case Execution</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th></tr>"""
 	for r in cur:
