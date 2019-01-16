@@ -140,7 +140,9 @@ def ShowTestResult():
 	filename = testcaseid + ".json"
 	with open(filename) as json_file:
 		testCaseJSON = json.loads(json_file)
-	print(testCaseJSON)
+		test_case_id = testCaseJSON["test_case_id"]
+		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
+	print("Read from Json File=>"+test_case_id, dnis)
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
