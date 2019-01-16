@@ -126,20 +126,6 @@ def recording_stat():
 	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
 	return ""
 
-# Update recording metadata to Database
-def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	cur = conn.cursor()
-	print(str(recordingURL)+"||"+str(recognizedText)+"||"+testcaseID+"||"+testCaseStep)
-	query = "UPDATE ivr_test_case_master set recording_url = %s, actual_value = %s where testcaseid=%s and testcasestepid = %s"
-	args = (recordingURL,str(recognizedText),str(testcaseID),testCaseStep)
-	cur.execute(query,args)
-	print("Rows Affected==>"+str(cur.rowcount))
-	conn.commit()
-	cur.close()	
-	conn.close()
-	return ""
-		
 if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
 	print ('Starting app on port %d' % port)
