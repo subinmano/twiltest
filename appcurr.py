@@ -177,13 +177,13 @@ def start():
 	# Get testcase details as string
 	testcaseid = request.values.get("TestCaseId", None)
 	filename = testcaseid + ".json"
+	session['currentCount']=0
+	currentStepCount=0
 	with open(filename) as json_file:
 		testCaseJSON = json.load(json_file)
 		test_case_id = testCaseJSON["test_case_id"]
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 		print(dnis, cli)
-		session['currentCount']=0
-		currentStepCount=0
 		#Twilio API call
 		#client = Client(account_sid, auth_token)
 		#Signalwire API call
