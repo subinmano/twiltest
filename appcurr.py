@@ -36,6 +36,7 @@ app.secret_key=SECRET_KEY
 cli = os.environ["cli"]
 account_sid = os.environ["account_sid"]
 auth_token = os.environ["auth_token"]
+signalwire_space_url = os.environ["signalwire_space_url"]
 databasename = os.environ["databasename"]
 databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
@@ -183,7 +184,10 @@ def start():
 		print(dnis, cli)
 		session['currentCount']=0
 		currentStepCount=0
-		client = Client(account_sid, auth_token)
+		#Twilio API call
+		#client = Client(account_sid, auth_token)
+		#Signalwire API call
+		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
 	return ""
 
