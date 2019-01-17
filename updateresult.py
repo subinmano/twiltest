@@ -23,7 +23,7 @@ def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
 	cur.execute(query,args)
 	for r in cur:
 		expected_value = r[0]
-		expected_confidence = r[1]
+		expected_confidence = int(r[1])
 	print(str(recordingURL)+"||"+str(recognizedText)+"||"+testcaseID+"||"+testCaseStep+"||"+expected_value+"||"+expected_confidence)
 	#error = wer(ground_truth, hypothesis)
 	actual_confidence = round((SequenceMatcher(None, expected_value, recognizedText).ratio()), 2)
