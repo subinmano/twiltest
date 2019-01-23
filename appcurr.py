@@ -185,9 +185,9 @@ def start():
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 		print(dnis, cli)
 		#Twilio API call
-		client = Client(account_sid, auth_token)
+		#client = Client(account_sid, auth_token)
 		#Signalwire API call
-		#client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
+		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
 	return ""
 
