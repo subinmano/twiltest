@@ -206,7 +206,9 @@ def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
 	testcaseid = request.values.get("TestCaseId", None)
+	RecordingUrl = request.values.get("RecordingUrl", None)
 	print("testcaseid is " + testcaseid)
+	print("Recording URL is => " + RecordingUrl)
 	filename = testcaseid + ".json"
 	print("CurrentStepCount is " + currentStepCount)
 	with open(filename) as json_file:
