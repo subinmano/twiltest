@@ -189,7 +189,7 @@ def start():
 		#Signalwire API call
 		#client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
-	return ""
+	return ShowTestResult()
 
 # Record Welcome prompt
 @app.route("/record_welcome", methods=['GET', 'POST'])
