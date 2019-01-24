@@ -189,7 +189,7 @@ def start():
 		#Signalwire API call
 		#client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
-	return ShowTestResult()
+	return show_completed_result(test_case_id)
 
 # Record Welcome prompt
 @app.route("/record_welcome", methods=['GET', 'POST'])
@@ -267,6 +267,22 @@ def recording_stat():
 	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
 	return ""
+
+def show_completed_result(testcaseid):
+	print("Inside show_completed_result")
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
+	args = (str(testcaseid))
+	cur.execute(query,args)
+	fileContent = """<html><title>IVR test case Execution</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th></tr>"""
+	for r in cur:
+		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td></tr>'
+		print("R3==>"+r[3])
+	cur.close()
+	conn.close()
+	fileContent = fileContent + '</body></html>'
+	return fileContent
 
 if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
