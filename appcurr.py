@@ -282,7 +282,7 @@ def show_completed_result(testcaseid):
 	cur.close()
 	conn.close()
 	fileContent = fileContent + '</table></body></html>'
-	print(fileContent)
+	print (str(fileContent))
 	return fileContent
 
 if __name__ == '__main__':
