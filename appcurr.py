@@ -281,7 +281,8 @@ def show_completed_result(testcaseid):
 		print("R3==>"+r[3])
 	cur.close()
 	conn.close()
-	fileContent = fileContent + '</body></html>'
+	fileContent = fileContent + '</table></body></html>'
+	print(fileContent)
 	return fileContent
 
 if __name__ == '__main__':
