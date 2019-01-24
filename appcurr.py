@@ -155,7 +155,7 @@ def ExecuteTestCaseUpdateResult():
 # Show testcase execution result in HTML page
 @app.route('/ShowTestResult', methods=['GET','POST'])
 def ShowTestResult():
-	testcaseid = request.values.get("TestCaseId", None)
+	testcaseid = "TC103"
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
@@ -240,7 +240,7 @@ def recording():
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	if "Hangup" in action:
 		response.hangup()
-	return show_completed_result(currentTestCaseid)
+	return ""
 
 # Receive recordng metadata
 @app.route("/recording_stat", methods=['GET', 'POST'])
@@ -267,23 +267,6 @@ def recording_stat():
 	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
 	return ""
-
-def show_completed_result(testcaseid):
-	print("Inside show_completed_result")
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	cur = conn.cursor()
-	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
-	args = (str(testcaseid))
-	cur.execute(query,args)
-	fileContent = """<html><title>IVR test case Execution</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th></tr>"""
-	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td></tr>'
-		print("R3==>"+r[3])
-	cur.close()
-	conn.close()
-	fileContent = fileContent + '</table></body></html>'
-	print (str(fileContent))
-	return fileContent
 
 if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
