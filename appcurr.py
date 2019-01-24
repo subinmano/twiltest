@@ -240,7 +240,7 @@ def recording():
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	if "Hangup" in action:
 		response.hangup()
-	return ""
+	return str(response)
 
 # Receive recordng metadata
 @app.route("/recording_stat", methods=['GET', 'POST'])
