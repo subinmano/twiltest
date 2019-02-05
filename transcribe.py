@@ -4,24 +4,18 @@ import sys
 import requests
 import json
 import urllib
-from flask import Flask, request, Response, make_response, jsonify, url_for, redirect, session, render_template
 # Google Cloud SDK
 from google.oauth2 import service_account
 from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 
-#Initiate Flask app
-app = Flask(__name__,template_folder='template')
-
 # Declare global variables
 credentials_dgf = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
 
 # This function calls Google STT and then returns recognition as text
-@app.route('/goog_speech2text', methods=['GET', 'POST'])
-#def goog_speech2text(RecordingUrl):
-def goog_speech2text():
-	RecordingUrl = request.values.get("RecordingUrl", None)
+#@app.route('/goog_speech2text', methods=['GET', 'POST'])
+def goog_speech2text(RecordingUrl):
 	#Generate Google STT Credentials
 	service_account_info = json.loads(credentials_dgf)
 	credentials = service_account.Credentials.from_service_account_info(service_account_info)
@@ -50,14 +44,4 @@ def goog_speech2text():
 	for i in range(len(response.results)):
 		recognized_text += response.results[i].alternatives[0].transcript
 	print("Transcript: " + recognized_text)
-	return ""
-	
-	#for result in response.results:
-		#print('Transcript: {}'.format(result.alternatives[0].transcript))
-		#recognized_text = result.alternatives[0].transcript
-	#return recognized_text
-
-if __name__ == '__main__':
-	port = int(os.getenv('PORT', 5000))
-	print ('Starting app on port %d' % port)
-	app.run(debug=False, port=port, host='0.0.0.0')
+	return recognized_text
