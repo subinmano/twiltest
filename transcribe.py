@@ -48,8 +48,8 @@ def goog_speech2text():
 	response = client.recognize(config, audio)
 	recognized_text = ""
 	for i in range(len(response.results)):
-		recognized_text = response.results[i].alternatives[0].transcript
-		print("Transcript: " + recognized_text)
+		recognized_text += response.results[i].alternatives[0].transcript
+	print("Transcript: " + recognized_text)
 	return ""
 	
 	#for result in response.results:
