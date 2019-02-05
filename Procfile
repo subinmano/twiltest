@@ -1,1 +1,1 @@
-web: python transcribe.py
+web: python appcurr.py
