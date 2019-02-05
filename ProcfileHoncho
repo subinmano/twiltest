@@ -1,2 +1,0 @@
-python testcaseupload.py
-gunicorn recording:app
