@@ -19,7 +19,9 @@ credentials_dgf = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
 
 # This function calls Google STT and then returns recognition as text
 @app.route('/goog_speech2text', methods=['GET', 'POST'])
-def goog_speech2text(RecordingUrl):
+#def goog_speech2text(RecordingUrl):
+def goog_speech2text():
+	RecordingUrl = request.values.get("RecordingUrl", None)
 	#Generate Google STT Credentials
 	service_account_info = json.loads(credentials_dgf)
 	credentials = service_account.Credentials.from_service_account_info(service_account_info)
