@@ -46,8 +46,8 @@ def goog_speech2text():
 		model='phone_call')
 	#Get the response from Google STT	
 	response = client.recognize(config, audio)
-	for i in range(len(response['results'])):
-		recognized_text += response['results'][i]['alternatives'][0]['transcript']
+	for i in range(len(response.results)):
+		recognized_text += response.results[i].alternatives[0].transcript
 		print("Transcript: " + recognized_text)
 	return ""
 	
