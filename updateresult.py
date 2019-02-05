@@ -7,6 +7,7 @@ import json
 import urllib
 from jiwer import wer
 from difflib import SequenceMatcher
+from datetime import datetime
 
 # Declare global variables
 databasename = os.environ["databasename"]
@@ -15,7 +16,7 @@ databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
 
 #@app.route('/Result',methods = ['POST'])
-def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
+def updateResultToDB(recordingURL,recognizedText,recordingDuration,testcaseID,testCaseStep):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT expected_value, expected_confidence FROM ivr_test_case_master where testcaseid = %s and testcasestepid = %s"
@@ -32,8 +33,10 @@ def updateResultToDB(recordingURL,recognizedText,testcaseID,testCaseStep):
 		result = "Fail"
 	else:
 		result = "Pass"
-	query = "UPDATE ivr_test_case_master set recording_url = %s, actual_value = %s, result = %s where testcaseid=%s and testcasestepid = %s"
-	args = (recordingURL,str(recognizedText), str(result), str(testcaseID),testCaseStep)
+	execution_status = "completed"
+	execution_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	query = "UPDATE ivr_test_case_master set recording_url = %s, actual_value = %s, recording_duration = %s, result = %s, execution_status = %s, execution_datetime = %s where testcaseid=%s and testcasestepid = %s"
+	args = (recordingURL, str(recognizedText), str(recordingDuration), str(result), str(execution_status), str(execution_datetime), str(testcaseID), testCaseStep)
 	cur.execute(query,args)
 	print("Rows Affected==>"+str(cur.rowcount))
 	conn.commit()
