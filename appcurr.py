@@ -211,7 +211,7 @@ def recording():
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
 		#updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, , RecordingDuration, testcaseid, currentStepCount)
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
 	print("testcaseid is " + testcaseid)
 	print("Recording URL is => " + RecordingUrl)
 	filename = testcaseid + ".json"
