@@ -1,8 +1,8 @@
 Flask==1.0.2
 requests>=2.20.0
-twilio==6.15.2
+twilio==6.16.4
 pymysql==0.9.2
-signalwire==1.4.0
+signalwire==1.4.2
 google-oauth==1.0.1
 google-cloud-speech>=0.27
 urllib3>=1.23
