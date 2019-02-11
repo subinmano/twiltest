@@ -8,22 +8,16 @@ import sys
 import requests
 import json
 import urllib
-from jiwer import wer
-from difflib import SequenceMatcher
 # Twilio Helper Library
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
 # Signalwire Helper lirary
 from signalwire.rest import Client as signalwire_client
 from signalwire.voice_response import VoiceResponse
-# Google Cloud SDK
-from google.oauth2 import service_account
-from google.cloud import speech
-from google.cloud.speech import enums
-from google.cloud.speech import types
 # Import custom modules
 import transcribe
 import updateresult
+import uploadtodb
 
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
@@ -48,43 +42,15 @@ databasepassword = os.environ["databasepassword"]
 def load_TestCaseUploadPage():
 	return render_template("FileUpload.html")
 
-# Receive post request from HTML and call helper functions
+# Receive Post request to invoke upload test case to db
 @app.route('/UploadTestCaseToDB',methods = ['POST'])
 def submitFileToDB():
 	if request.method == 'POST':
 		f = request.files['fileToUpload']
 		f.save(f.filename)
-		uploadTestCaseToDB(f.filename)
+		uploadtodb.uploadTestCaseToDB(f.filename)
 		createJSONStringForTestCases()
 	return readTestCasesFromDB()
-
-# Upload test case information to Database
-def uploadTestCaseToDB(uploadedFileName):
-	with open(uploadedFileName, "r") as ins:
-		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-		cur = conn.cursor()
-		i=0
-		for line in ins:
-			TestCaseLine = line.split(",")
-			caseID = TestCaseLine[0]
-			caseStepID = TestCaseLine[1]
-			action = TestCaseLine[2]
-			inputType = TestCaseLine[3]
-			inputValue = TestCaseLine[4]
-			inputpause = TestCaseLine[5]
-			expectedValue = TestCaseLine[6]
-			promptDuration = TestCaseLine[7]
-			expectedconfidence = TestCaseLine[8]
-			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-			args = (caseID,caseStepID,action,inputType,inputValue,inputpause,expectedValue,promptDuration,expectedconfidence)
-			if i!=0:
-				cur.execute(query,args)
-			else:
-				i=i+1
-		conn.commit()
-		cur.close()
-		conn.close()
-		return ""
 
 #Get test case details from Database and display in HTML page
 def readTestCasesFromDB():
