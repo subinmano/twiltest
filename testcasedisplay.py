@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+### This module reads test case from db and displays in html page ###
 
 import os
 import io
