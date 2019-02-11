@@ -8,9 +8,9 @@ import sys
 import requests
 import json
 import urllib
-# Twilio Helper Library
-from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
+# Signalwire Helper lirary
+from signalwire.rest import Client as signalwire_client
+from signalwire.voice_response import VoiceResponse
 
 #Initiate Flask app
 app = Flask(__name__)
@@ -23,6 +23,7 @@ app.secret_key=SECRET_KEY
 cli = os.environ["cli"]
 account_sid = os.environ["account_sid"]
 auth_token = os.environ["auth_token"]
+signalwire_space_url = os.environ["signalwire_space_url"]
 databasename = os.environ["databasename"]
 databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
@@ -31,20 +32,21 @@ databasepassword = os.environ["databasepassword"]
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
 
-#Receive the POST request
+#Receive the POST request from Execute Test Case
 @app.route('/start', methods=['GET','POST'])
 def start():
 	# Get testcase details as string
 	testcaseid = request.values.get("TestCaseId", None)
 	filename = testcaseid + ".json"
+	session['currentCount']=0
+	currentStepCount=0
 	with open(filename) as json_file:
 		testCaseJSON = json.load(json_file)
 		test_case_id = testCaseJSON["test_case_id"]
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 		print(dnis, cli)
-		session['currentCount']=0
-		currentStepCount=0
-		client = Client(account_sid, auth_token)
+		#Signalwire API call
+		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 		call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
 	return ""
 
@@ -53,7 +55,6 @@ def start():
 def record_welcome():
 	response = VoiceResponse()
 	currentTestCaseid=request.values.get("test_case_id", None)
-	#response.record(trim="trim-silence", action="/recording?StepNumber=1,TestCaseId=currentTestCaseid", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	return str(response)
 
@@ -63,7 +64,13 @@ def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
 	testcaseid = request.values.get("TestCaseId", None)
+	RecordingUrl = request.values.get("RecordingUrl", None)
+	RecordingDuration = request.values.get("RecordingDuration", None)
+	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
+	if Recognized_text:
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
 	print("testcaseid is " + testcaseid)
+	print("Recording URL is => " + RecordingUrl)
 	filename = testcaseid + ".json"
 	print("CurrentStepCount is " + currentStepCount)
 	with open(filename) as json_file:
@@ -86,42 +93,16 @@ def recording():
 			currentStepCount=int(currentStepCount)+1
 			session['currentCount']=str(currentStepCount)
 			response.play(digits=input_value)
-			response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 		if "Say" in input_type:
 			print("i am at Say input step")
 			currentStepCount=int(currentStepCount)+1
 			session['currentCount']=str(currentStepCount)
 			response.say(input_value, voice="alice", language="en-US")
-			response.record(trim="trim-silence", action="/recording?StepNumber="+str(currentStepCount), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	if "Hangup" in action:
 		response.hangup()
 	return str(response)
-
-# Receive recordng metadata
-@app.route("/recording_stat", methods=['GET', 'POST'])
-def recording_stat():
-	print("I am at recording callback event")
-	req = request.get_json(silent=True, force=True)
-	StepNumber = request.values.get("step", None)
-	print("StepNumber==>"+str(StepNumber))
-	testCaseID = request.values.get("currentTestCaseID", None)
-	print("testCaseID==>"+str(testCaseID))
-	AccountSid = request.values.get("AccountSid", None)
-	CallSid =  request.values.get("CallSid", None)
-	RecordingSid = request.values.get("RecordingSid", None)
-	RecordingUrl = request.values.get("RecordingUrl", None)
-	RecordingStatus = request.values.get("RecordingStatus", None)
-	RecordingDuration = request.values.get("RecordingDuration", None)
-	RecordingChannels = request.values.get("RecordingChannels", None)
-	RecordingStartTime = request.values.get("RecordingStartTime", None)
-	RecordingSource	= request.values.get("RecordingSource", None)
-	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
-	if Recognized_text:
-		#updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
-	print("testCaseID==>"+str(testCaseID))
-	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
-	return ""
 
 if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
