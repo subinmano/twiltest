@@ -18,6 +18,8 @@ from signalwire.voice_response import VoiceResponse
 import transcribe
 import updateresult
 import uploadtodb
+import testcasedisplay
+import createjson
 
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
@@ -49,66 +51,8 @@ def submitFileToDB():
 		f = request.files['fileToUpload']
 		f.save(f.filename)
 		uploadtodb.uploadTestCaseToDB(f.filename)
-		createJSONStringForTestCases()
-	return readTestCasesFromDB()
-
-#Get test case details from Database and display in HTML page
-def readTestCasesFromDB():
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	cur = conn.cursor()
-	cur.execute("SELECT * FROM ivr_test_case_master")
-	fileContent = """<html><title>IVR test case Execution</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th></tr>"""
-	testcaseid=""
-	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td></tr>'
-		testcaseid=r[0]
-	cur.close()
-	conn.close()
-	#fileContent = fileContent +'<form action="/ExecuteTestCase?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form></body></html>'
-	fileContent = fileContent +'<form action="/ExecuteTestCase?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form>''<form action="/ShowTestResult?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Show Test Result" name="submit"></form></body></html>'
-	return fileContent
-
-#Validation of testcase upload
-def validateString(testCaseItem):
-	if not testCaseItem:
-		return ""
-	return testCaseItem
-
-#Create Json of Testcase details and insert to table
-def createJSONStringForTestCases():
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	cur = conn.cursor()
-	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break FROM ivr_test_case_master")
-	testCaseid=""
-	testCaseStepsCount=""
-	testCaseStepsList=[]
-	i=0
-	for r in cur:
-		print("R0==>"+r[0]+"R1==>"+r[1]+"r[2]==>"+r[2]+"r[3]==>"+r[3]+"r[4]==>"+r[4])
-		testCaseid=r[0]
-		i=i+1
-		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4])
-	testCaseStepsCount=i
-	print("testCaseid==>"+testCaseid)
-	print("testCaseStepsCount==>"+str(testCaseStepsCount))
-	print(testCaseStepsList)
-	jsonTestCaseString='{'+'"test_case_id":"'+testCaseid+'","test_steps":"'+str(testCaseStepsCount)+'","steps":['
-	for testCaseStepItem in testCaseStepsList:
-		testCaseStepItem=testCaseStepItem.replace('"','')
-		splittedTestCaseItem=testCaseStepItem.split("|")
-		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'"},'
-	jsonTestCaseString=jsonTestCaseString[:-1]
-	jsonTestCaseString=jsonTestCaseString+']}'
-	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"
-	args = (testCaseid,jsonTestCaseString)
-	cur.execute(query,args)
-	conn.commit()
-	cur.close()
-	conn.close()
-	filename = testCaseid + ".json"
-	f = open(filename, "w")
-	f.write(jsonTestCaseString)
-	return ""
+		createjson.createJSONStringForTestCases()
+	return testcasedisplay.readTestCasesFromDB()
 
 # Submit POST request
 @app.route('/ExecuteTestCase', methods = ['POST'])
@@ -117,25 +61,7 @@ def ExecuteTestCaseUpdateResult():
 	hostname = request.url_root
 	print(hostname)
 	return redirect(hostname + 'start?TestCaseId='+testcaseid+'', code=307)
-
-# Show testcase execution result in HTML page
-@app.route('/ShowTestResult', methods=['GET','POST'])
-def ShowTestResult():
-	testcaseid = "TC103"
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	cur = conn.cursor()
-	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
-	args = (str(testcaseid))
-	cur.execute(query,args)
-	fileContent = """<html><title>IVR test case Execution</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th></tr>"""
-	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td></tr>'
-		print("R3==>"+r[3])
-	cur.close()
-	conn.close()
-	fileContent = fileContent + '</body></html>'
-	return fileContent
-  
+ 
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
 @app.route('/start', methods=['GET','POST'])
