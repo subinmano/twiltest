@@ -1,3 +1,22 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+### This module updates test cases to database ###
+
+import os
+import io
+import pymysql
+from flask import Flask, request, Response, make_response, jsonify, url_for, redirect, session, render_template
+import sys
+import requests
+import json
+import urllib
+
+# Declare global variables
+databasename = os.environ["databasename"]
+databasehost = os.environ["databasehost"]
+databaseusername = os.environ["databaseusername"]
+databasepassword = os.environ["databasepassword"]
+
 # Upload test case information to Database
 def uploadTestCaseToDB(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
