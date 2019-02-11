@@ -8,12 +8,6 @@ import sys
 import requests
 import json
 import urllib
-# Twilio Helper Library
-from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
-# Signalwire Helper lirary
-from signalwire.rest import Client as signalwire_client
-from signalwire.voice_response import VoiceResponse
 # Import custom modules
 import uploadtodb
 import testcasedisplay
