@@ -10,6 +10,7 @@ import json
 import urllib
 from jiwer import wer
 from difflib import SequenceMatcher
+import datetime
 # Twilio Helper Library
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
@@ -75,8 +76,9 @@ def uploadTestCaseToDB(uploadedFileName):
 			expectedValue = TestCaseLine[6]
 			promptDuration = TestCaseLine[7]
 			expectedconfidence = TestCaseLine[8]
-			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-			args = (caseID,caseStepID,action,inputType,inputValue,inputpause,expectedValue,promptDuration,expectedconfidence)
+			uploaddatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence, uploaded_date) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+			args = (caseID,caseStepID,action,inputType,inputValue,inputpause,expectedValue,promptDuration,expectedconfidence,uploaddatetime)
 			if i!=0:
 				cur.execute(query,args)
 			else:
