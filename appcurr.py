@@ -248,6 +248,7 @@ def recording():
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	if "Hangup" in action:
 		response.hangup()
+		print ("I am afer hangup")
 		return redirect(hostname + 'ShowTestResult?TestCaseId='+currentTestCaseid+'', code=307)
 	return str(response)
 
