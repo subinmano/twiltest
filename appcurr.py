@@ -155,7 +155,7 @@ def ExecuteTestCaseUpdateResult():
 # Show testcase execution result in HTML page
 @app.route('/ShowTestResult', methods=['GET','POST'])
 def ShowTestResult():
-	testcaseid = "TC103"
+	testcaseid = request.values.get("currentTestCaseid", None)
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
@@ -226,6 +226,7 @@ def recording():
 		print("Input Type is =>" + input_type)
 		input_value = testCaseJSON["steps"][int(currentStepCount)]["input_value"]
 		print("Input Value is =>" + input_value)
+		hostname = request.url_root
 		pause = testCaseJSON["steps"][int(currentStepCount)]["pause"]
 	if pause!="":
 		response.pause(length=int(pause))
@@ -245,6 +246,7 @@ def recording():
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	if "Hangup" in action:
 		response.hangup()
+		return redirect(hostname + 'ShowTestResult?TestCaseId='+currentTestCaseid+'', code=307)
 	return str(response)
 
 # Receive recordng metadata
@@ -267,7 +269,6 @@ def recording_stat():
 	RecordingSource	= request.values.get("RecordingSource", None)
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
-		#updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
 		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
 	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
