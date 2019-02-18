@@ -154,24 +154,6 @@ def ExecuteTestCaseUpdateResult():
 	print(hostname)
 	return redirect(hostname + 'start?TestCaseId='+testcaseid+'', code=307)
 
-# Show testcase execution result in HTML page
-@app.route('/ShowTestResult', methods=['GET','POST'])
-def ShowTestResult():
-	testcaseid = request.values.get("currentTestCaseid", None)
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	cur = conn.cursor()
-	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
-	args = (str(testcaseid))
-	cur.execute(query,args)
-	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th><th>Uploaded date</th><th>Execution status</th><th>Execution date</th></tr>"""
-	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td><td>'+validateString(r[13])+'</td><td>'+validateString(r[14])+'</td><td>'+validateString(r[15])+'</td></tr>'
-		print("R3==>"+r[3])
-	cur.close()
-	conn.close()
-	fileContent = fileContent + '</body></html>'
-	return fileContent
-  
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
 @app.route('/start', methods=['GET','POST'])
@@ -208,14 +190,15 @@ def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
 	testcaseid = request.values.get("TestCaseId", None)
+	print("testcaseid is " + testcaseid)
+	#Only for Signalwire... Not for Twilio
 	RecordingUrl = request.values.get("RecordingUrl", None)
 	RecordingDuration = request.values.get("RecordingDuration", None)
+	print("Recording URL is => " + RecordingUrl)
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
-		#updateResultToDB(RecordingUrl, RecordingDuration, testCaseID, StepNumber)
 		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
-	print("testcaseid is " + testcaseid)
-	print("Recording URL is => " + RecordingUrl)
+	#Common for both
 	filename = testcaseid + ".json"
 	print("CurrentStepCount is " + currentStepCount)
 	with open(filename) as json_file:
@@ -247,10 +230,32 @@ def recording():
 			response.say(input_value, voice="alice", language="en-US")
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	if "Hangup" in action:
-		response.hangup()
+		#response.hangup()
 		print ("I am after hangup")
+		print ("Hostname is " + hostname)
+		print ("Testcaseid is " + currentTestCaseid)
 		return redirect(hostname + 'ShowTestResult?TestCaseId='+currentTestCaseid+'', code=307)
 	return str(response)
+
+# Show testcase execution result in HTML page
+@app.route('/ShowTestResult', methods=['GET','POST'])
+def ShowTestResult():
+	response = VoiceResponse()
+	testcaseid = request.values.get("currentTestCaseid", None)
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
+	args = (str(testcaseid))
+	cur.execute(query,args)
+	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th><th>Uploaded date</th><th>Execution status</th><th>Execution date</th></tr>"""
+	for r in cur:
+		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td><td>'+validateString(r[13])+'</td><td>'+validateString(r[14])+'</td><td>'+validateString(r[15])+'</td></tr>'
+		print("R3==>"+r[3])
+	cur.close()
+	conn.close()
+	fileContent = fileContent + '</body></html>'
+	response.hangup()
+	return fileContent
 
 # Receive recordng metadata
 @app.route("/recording_stat", methods=['GET', 'POST'])
