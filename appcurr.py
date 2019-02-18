@@ -114,16 +114,16 @@ def validateString(testCaseItem):
 def createJSONStringForTestCases():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break FROM ivr_test_case_master")
+	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master")
 	testCaseid=""
 	testCaseStepsCount=""
 	testCaseStepsList=[]
 	i=0
 	for r in cur:
-		print("R0==>"+r[0]+"R1==>"+r[1]+"r[2]==>"+r[2]+"r[3]==>"+r[3]+"r[4]==>"+r[4])
+		print("R0==>"+r[0]+"R1==>"+r[1]+"R2==>"+r[2]+"R3==>"+r[3]+"R4==>"+r[4]+"R5==>"+r[5])
 		testCaseid=r[0]
 		i=i+1
-		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4])
+		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4]+"|"+r[5])
 	testCaseStepsCount=i
 	print("testCaseid==>"+testCaseid)
 	print("testCaseStepsCount==>"+str(testCaseStepsCount))
@@ -132,7 +132,7 @@ def createJSONStringForTestCases():
 	for testCaseStepItem in testCaseStepsList:
 		testCaseStepItem=testCaseStepItem.replace('"','')
 		splittedTestCaseItem=testCaseStepItem.split("|")
-		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'"},'
+		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","prompt_duration":"'+splittedTestCaseItem[4]+'"},'
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
 	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"
@@ -167,12 +167,17 @@ def start():
 		testCaseJSON = json.load(json_file)
 		test_case_id = testCaseJSON["test_case_id"]
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
-		print(dnis, cli)
-		#Twilio API call
-		#client = Client(account_sid, auth_token)
-		#Signalwire API call
-		client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
-		call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], _external=True))
+		max_length = testCaseJSON["steps"][currentStepCount]["prompt_duration"]
+	if max_length!="":
+		prompt_duration = int(prompt_duration) + 5
+	else:
+		prompt_duration = 600
+	print(dnis, cli, test_case_id, prompt_duration)
+	#Twilio API call
+	#client = Client(account_sid, auth_token)
+	#Signalwire API call
+	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
+	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], prompt_duration=[prompt_duration], _external=True))
 	return ""
 
 # Record Welcome prompt
@@ -180,8 +185,9 @@ def start():
 def record_welcome():
 	response = VoiceResponse()
 	currentTestCaseid=request.values.get("test_case_id", None)
+	prompt_duration=request.values.get("prompt_duration", '')
 	#response.record(trim="trim-silence", action="/recording?StepNumber=1,TestCaseId=currentTestCaseid", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
-	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	return str(response)
 
 # Twilio/Signalwire functions for record and TTS
@@ -191,6 +197,7 @@ def recording():
 	currentStepCount= request.values.get("StepNumber", None)
 	testcaseid = request.values.get("TestCaseId", None)
 	print("testcaseid is " + testcaseid)
+	
 	#Only for Signalwire... Not for Twilio
 	RecordingUrl = request.values.get("RecordingUrl", None)
 	RecordingDuration = request.values.get("RecordingDuration", None)
@@ -198,7 +205,8 @@ def recording():
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
 		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
-	#Common for both
+	
+	#Common for both-- Get values from json file
 	filename = testcaseid + ".json"
 	print("CurrentStepCount is " + currentStepCount)
 	with open(filename) as json_file:
@@ -211,25 +219,38 @@ def recording():
 		print("Input Type is =>" + input_type)
 		input_value = testCaseJSON["steps"][int(currentStepCount)]["input_value"]
 		print("Input Value is =>" + input_value)
-		hostname = request.url_root
 		pause = testCaseJSON["steps"][int(currentStepCount)]["pause"]
+		print("Input Value is =>" + pause)
+		max_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
+	
+	#Check for pause or break needed
 	if pause!="":
 		response.pause(length=int(pause))
 		print("I have paused")
+	
+	#Check for maximum length of recording if prompt duration is mentioned
+	if max_length!="":
+		prompt_duration = int(prompt_duration) + 5
+	else:
+		prompt_duration = 600
+			
 	if "Reply" in action:
 		if "DTMF" in input_type:
 			print("i am at DTMF input step")
 			currentStepCount=int(currentStepCount)+1
 			session['currentCount']=str(currentStepCount)
 			response.play(digits=input_value)
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			
 		if "Say" in input_type:
 			print("i am at Say input step")
 			currentStepCount=int(currentStepCount)+1
 			session['currentCount']=str(currentStepCount)
 			response.say(input_value, voice="alice", language="en-US")
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+	
 	if "Hangup" in action:
+		hostname = request.url_root
 		#response.hangup()
 		print ("Hostname is " + hostname)
 		print ("Testcaseid is " + currentTestCaseid)
