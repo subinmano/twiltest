@@ -231,7 +231,6 @@ def recording():
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	if "Hangup" in action:
 		#response.hangup()
-		print ("I am after hangup")
 		print ("Hostname is " + hostname)
 		print ("Testcaseid is " + currentTestCaseid)
 		return redirect(hostname + 'ShowTestResult?TestCaseId='+currentTestCaseid+'', code=307)
@@ -241,7 +240,7 @@ def recording():
 @app.route('/ShowTestResult', methods=['GET','POST'])
 def ShowTestResult():
 	response = VoiceResponse()
-	testcaseid = request.values.get("currentTestCaseid", None)
+	testcaseid = request.values.get("TestCaseId", None)
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
@@ -254,6 +253,7 @@ def ShowTestResult():
 	cur.close()
 	conn.close()
 	fileContent = fileContent + '</body></html>'
+	print ("I am after hangup")
 	response.hangup()
 	return fileContent
 
