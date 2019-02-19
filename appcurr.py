@@ -172,7 +172,7 @@ def start():
 		max_length = int(max_length) + 5
 	else:
 		max_length = 600
-	print(dnis, cli, test_case_id, prompt_duration)
+	print(dnis, cli, test_case_id, max_length)
 	#Twilio API call
 	#client = Client(account_sid, auth_token)
 	#Signalwire API call
