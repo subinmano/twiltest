@@ -150,16 +150,18 @@ def createJSONStringForTestCases():
 @app.route('/ExecuteTestCase', methods = ['POST'])
 def ExecuteTestCaseUpdateResult():
 	testcaseid = request.values.get("TestCaseId", None)
-	hostname = request.url_root
-	print(hostname)
-	return redirect(hostname + 'start?TestCaseId='+testcaseid+'', code=307)
+	start(testcaseid)
+	return ""
+	#hostname = request.url_root
+	#print(hostname)
+	#return redirect(hostname + 'start?TestCaseId='+testcaseid+'', code=307)
 
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
-@app.route('/start', methods=['GET','POST'])
-def start():
+#@app.route('/start', methods=['GET','POST'])
+def start(testcaseid):
 	# Get testcase details as string
-	testcaseid = request.values.get("TestCaseId", None)
+	#testcaseid = request.values.get("TestCaseId", None)
 	filename = testcaseid + ".json"
 	session['currentCount']=0
 	currentStepCount=0
