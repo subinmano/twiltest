@@ -169,15 +169,15 @@ def start():
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
 		max_length = testCaseJSON["steps"][currentStepCount]["prompt_duration"]
 	if max_length!="":
-		prompt_duration = int(prompt_duration) + 5
+		max_length = int(max_length) + 5
 	else:
-		prompt_duration = 600
+		max_length = 600
 	print(dnis, cli, test_case_id, prompt_duration)
 	#Twilio API call
 	#client = Client(account_sid, auth_token)
 	#Signalwire API call
 	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
-	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], prompt_duration=[prompt_duration], _external=True))
+	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], prompt_duration=[max_length], _external=True))
 	return ""
 
 # Record Welcome prompt
@@ -230,9 +230,9 @@ def recording():
 	
 	#Check for maximum length of recording if prompt duration is mentioned
 	if max_length!="":
-		prompt_duration = int(prompt_duration) + 5
+		max_length = int(max_length) + 5
 	else:
-		prompt_duration = 600
+		max_length = 600
 			
 	if "Reply" in action:
 		if "DTMF" in input_type:
@@ -240,14 +240,14 @@ def recording():
 			currentStepCount=int(currentStepCount)+1
 			session['currentCount']=str(currentStepCount)
 			response.play(digits=input_value)
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 			
 		if "Say" in input_type:
 			print("i am at Say input step")
 			currentStepCount=int(currentStepCount)+1
 			session['currentCount']=str(currentStepCount)
 			response.say(input_value, voice="alice", language="en-US")
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	
 	if "Hangup" in action:
 		hostname = request.url_root
