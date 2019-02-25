@@ -110,13 +110,10 @@ def validateString(testCaseItem):
 	#conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	#cur = conn.cursor()
 	#cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master)
-	#testcaseidstring=[]
 	#for r in cur:
-		#testcaseidstring.append(r[0])
-		
-		#createJSONStringForTestCases(testcaseid)
-		
-		
+		#createJSONStringForTestCases(r[0])
+		#ExecuteTestCaseUpdateResult(r[0])
+	#return ""
 
 #Create Json of Testcase details and insert to table
 def createJSONStringForTestCases():
@@ -162,10 +159,6 @@ def ExecuteTestCaseUpdateResult():
 	testcaseid = request.values.get("TestCaseId", None)
 	start(testcaseid)
 	return ""
-	#hostname = request.url_root
-	#print(hostname)
-	#return redirect(hostname + 'start?TestCaseId='+testcaseid+'', code=307)
-
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
 #@app.route('/start', methods=['GET','POST'])
@@ -290,7 +283,7 @@ def ShowTestResult():
 	response.hangup()
 	return fileContent
 
-# Receive recordng metadata
+# Receive recording metadata
 @app.route("/recording_stat", methods=['GET', 'POST'])
 def recording_stat():
 	print("I am at recording callback event")
