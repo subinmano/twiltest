@@ -69,16 +69,16 @@ def uploadTestCaseToDB(uploadedFileName):
 			TestCaseLine = line.split(",")
 			caseID = TestCaseLine[0]
 			caseStepID = TestCaseLine[1]
-			action = TestCaseLine[2]
+			actionType = TestCaseLine[2]
 			inputType = TestCaseLine[3]
 			inputValue = TestCaseLine[4]
-			inputpause = TestCaseLine[5]
+			inputPause = TestCaseLine[5]
 			expectedValue = TestCaseLine[6]
 			promptDuration = TestCaseLine[7]
-			expectedconfidence = TestCaseLine[8]
-			uploaddatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+			expectedConfidence = TestCaseLine[8]
+			uploadDatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence, uploaded_date) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-			args = (caseID,caseStepID,action,inputType,inputValue,inputpause,expectedValue,promptDuration,expectedconfidence,uploaddatetime)
+			args = (caseID,caseStepID,actionType,inputType,inputValue,inputPause,expectedValue,promptDuration,expectedConfidence,uploadDatetime)
 			if i!=0:
 				cur.execute(query,args)
 			else:
@@ -87,18 +87,6 @@ def uploadTestCaseToDB(uploadedFileName):
 		cur.close()
 		conn.close()
 		return ""
-
-#Call helper functions for each unique testcaseid
-#def getDistinctTestCaseIdFromDB():
-	#conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	#cur = conn.cursor()
-	#cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
-	#testcaseidstring=[]
-	#for r in cur:
-		#testcasesidstring=testcaseidstring + "|" + r[0]
-		#testcaseidstring.append(r[0])
-
-
 
 #Get test case details from Database and display in HTML page
 def readTestCasesFromDB():
@@ -121,6 +109,19 @@ def validateString(testCaseItem):
 	if not testCaseItem:
 		return ""
 	return testCaseItem
+
+#Call helper functions for each unique testcaseid
+#def getDistinctTestCaseIdFromDB():
+	#conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	#cur = conn.cursor()
+	#cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
+	#testcaseidstring=[]
+	#for r in cur:
+		#testcaseidstring.append(r[0])
+		
+		#createJSONStringForTestCases(testcaseid)
+		
+		
 
 #Create Json of Testcase details and insert to table
 def createJSONStringForTestCases():
