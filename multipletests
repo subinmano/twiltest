@@ -17,11 +17,6 @@ from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial
 # Signalwire Helper lirary
 from signalwire.rest import Client as signalwire_client
 from signalwire.voice_response import VoiceResponse
-# Google Cloud SDK
-from google.oauth2 import service_account
-from google.cloud import speech
-from google.cloud.speech import enums
-from google.cloud.speech import types
 # Import custom modules
 import transcribe
 import updateresult
@@ -114,7 +109,7 @@ def validateString(testCaseItem):
 #def getDistinctTestCaseIdFromDB():
 	#conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	#cur = conn.cursor()
-	#cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
+	#cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master)
 	#testcaseidstring=[]
 	#for r in cur:
 		#testcaseidstring.append(r[0])
