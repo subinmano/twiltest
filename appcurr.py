@@ -88,6 +88,18 @@ def uploadTestCaseToDB(uploadedFileName):
 		conn.close()
 		return ""
 
+#Call helper functions for each unique testcaseid
+#def getDistinctTestCaseIdFromDB():
+	#conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	#cur = conn.cursor()
+	#cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
+	#testcaseidstring=[]
+	#for r in cur:
+		#testcasesidstring=testcaseidstring + "|" + r[0]
+		#testcaseidstring.append(r[0])
+
+
+
 #Get test case details from Database and display in HTML page
 def readTestCasesFromDB():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
@@ -112,9 +124,11 @@ def validateString(testCaseItem):
 
 #Create Json of Testcase details and insert to table
 def createJSONStringForTestCases():
+#def createJSONStringForTestCases(testcaseid):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master")
+	#cur.execute("SELECT action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master where testcaseid=+testcaseid+")
 	testCaseid=""
 	testCaseStepsCount=""
 	testCaseStepsList=[]
