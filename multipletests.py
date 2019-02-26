@@ -11,6 +11,7 @@ import urllib
 from jiwer import wer
 from difflib import SequenceMatcher
 from datetime import datetime
+import time
 # Twilio Helper Library
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
@@ -110,6 +111,7 @@ def ExecuteTestCase():
 	for r in cur:
 		createJSONStringForTestCases(r[0])
 		makecallfortestcase(r[0])
+		#time.sleep(60)
 	return ""
 
 #Create Json of Testcase details and insert to table
@@ -192,7 +194,7 @@ def recording():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
 	testcaseid = request.values.get("TestCaseId", None)
-	print("testcaseid is " + testcaseid)
+	print("testcaseid is " +testcaseid)
 	
 	#Only for Signalwire... Not for Twilio
 	RecordingUrl = request.values.get("RecordingUrl", None)
@@ -218,6 +220,7 @@ def recording():
 		pause = testCaseJSON["steps"][int(currentStepCount)]["pause"]
 		print("Input Value is =>" + pause)
 		max_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
+		print("Recording Length =>" + max_length)
 	
 	#Check for pause or break needed
 	if pause!="":
@@ -246,13 +249,10 @@ def recording():
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	
 	if "Hangup" in action:
-		hostname = request.url_root
-		#response.hangup()
-		print ("Hostname is " + hostname)
+		print ("I am at hangup")
 		print ("Testcaseid is " + currentTestCaseid)
 		response.hangup()
 		print ("I am after hangup")
-		#return redirect(hostname + 'ShowTestResult?TestCaseId='+currentTestCaseid+'', code=307)
 	return str(response)
 
 # Show testcase execution result in HTML page
