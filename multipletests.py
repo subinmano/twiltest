@@ -159,10 +159,11 @@ def createJSONStringForTestCases(testcaseid):
 # Submit POST request
 #@app.route('/ExecuteTestCase', methods = ['POST'])
 def ExecuteTestCaseUpdateResult(testcaseid):
-	print ("I have to execute=> " +testcaseid
+	print ("I have to execute=> " +testcaseid)
+	return ""	  
 	#testcaseid = request.values.get("TestCaseId", None)
 	#start(testcaseid)
-	return ""
+	
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
 #@app.route('/start', methods=['GET','POST'])
