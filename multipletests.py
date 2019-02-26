@@ -51,7 +51,6 @@ def submitFileToDB():
 		f = request.files['fileToUpload']
 		f.save(f.filename)
 		uploadTestCaseToDB(f.filename)
-		#createJSONStringForTestCases()
 	return readTestCasesFromDB()
 
 # Upload test case information to Database
@@ -95,7 +94,6 @@ def readTestCasesFromDB():
 		testcaseid=r[0]
 	cur.close()
 	conn.close()
-	#fileContent = fileContent +'<form action="/ExecuteTestCase?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form></body></html>'
 	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form>''<form action="/ShowTestResult?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Show Test Result" name="submit"></form></body></html>'
 	return fileContent
 
@@ -113,7 +111,8 @@ def getDistinctTestCaseIdFromDB():
 	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
 	for r in cur:
 		createJSONStringForTestCases(r[0])
-		ExecuteTestCaseUpdateResult(r[0])
+		#ExecuteTestCaseUpdateResult(r[0])
+		start(r[0])
 	return ""
 
 #Create Json of Testcase details and insert to table
@@ -121,7 +120,6 @@ def getDistinctTestCaseIdFromDB():
 def createJSONStringForTestCases(testcaseid):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	#cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master")
 	query = "SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master where testcaseid=%s"
 	args = (str(testcaseid))
 	cur.execute(query,args)
@@ -151,19 +149,18 @@ def createJSONStringForTestCases(testcaseid):
 	conn.commit()
 	cur.close()
 	conn.close()
-	#filename = testCaseid + ".json"
-	#f = open(filename, "w")
-	#f.write(jsonTestCaseString)
+	filename = testCaseid + ".json"
+	f = open(filename, "w")
+	f.write(jsonTestCaseString)
 	return ""
 
 # Submit POST request
 #@app.route('/ExecuteTestCase', methods = ['POST'])
 def ExecuteTestCaseUpdateResult(testcaseid):
 	print ("I have to execute=> " +testcaseid)
-	return ""	  
-	#testcaseid = request.values.get("TestCaseId", None)
-	#start(testcaseid)
-	
+	start(testcaseid)
+	return ""
+
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
 #@app.route('/start', methods=['GET','POST'])
