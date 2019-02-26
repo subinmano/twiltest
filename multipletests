@@ -96,7 +96,7 @@ def readTestCasesFromDB():
 	cur.close()
 	conn.close()
 	#fileContent = fileContent +'<form action="/ExecuteTestCase?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form></body></html>'
-	fileContent = fileContent +'<form action="/ExecuteTestCase?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form>''<form action="/ShowTestResult?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Show Test Result" name="submit"></form></body></html>'
+	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form>''<form action="/ShowTestResult?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Show Test Result" name="submit"></form></body></html>'
 	return fileContent
 
 #Validation of testcase upload
@@ -105,23 +105,27 @@ def validateString(testCaseItem):
 		return ""
 	return testCaseItem
 
-#Call helper functions for each unique testcaseid
-#def getDistinctTestCaseIdFromDB():
-	#conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	#cur = conn.cursor()
-	#cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master)
-	#for r in cur:
-		#createJSONStringForTestCases(r[0])
-		#ExecuteTestCaseUpdateResult(r[0])
-	#return ""
+Call helper functions for each unique testcaseid
 
-#Create Json of Testcase details and insert to table
-def createJSONStringForTestCases():
-#def createJSONStringForTestCases(testcaseid):
+@app.route('/ExecuteTestCase', methods = ['POST'])
+def getDistinctTestCaseIdFromDB():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master")
-	#cur.execute("SELECT action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master where testcaseid=+testcaseid+")
+	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master)
+	for r in cur:
+		createJSONStringForTestCases(r[0])
+		ExecuteTestCaseUpdateResult(r[0])
+	return ""
+
+#Create Json of Testcase details and insert to table
+#def createJSONStringForTestCases():
+def createJSONStringForTestCases(testcaseid):
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	#cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master")
+	query = "SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master where testcaseid=%s"
+	args = (str(testcaseid))
+	cur.execute(query,args)
 	testCaseid=""
 	testCaseStepsCount=""
 	testCaseStepsList=[]
@@ -148,16 +152,17 @@ def createJSONStringForTestCases():
 	conn.commit()
 	cur.close()
 	conn.close()
-	filename = testCaseid + ".json"
-	f = open(filename, "w")
-	f.write(jsonTestCaseString)
+	#filename = testCaseid + ".json"
+	#f = open(filename, "w")
+	#f.write(jsonTestCaseString)
 	return ""
 
 # Submit POST request
-@app.route('/ExecuteTestCase', methods = ['POST'])
-def ExecuteTestCaseUpdateResult():
-	testcaseid = request.values.get("TestCaseId", None)
-	start(testcaseid)
+#@app.route('/ExecuteTestCase', methods = ['POST'])
+def ExecuteTestCaseUpdateResult(testcaseid):
+	print ("I have to execute=> " +testcaseid
+	#testcaseid = request.values.get("TestCaseId", None)
+	#start(testcaseid)
 	return ""
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
@@ -233,7 +238,7 @@ def recording():
 		response.pause(length=int(pause))
 		print("I have paused")
 	
-	#Check for maximum length of recording if prompt duration is mentioned
+	#Set maximum length of recording if prompt duration is mentioned or else set maximum length as 600 seconds
 	if max_length!="":
 		max_length = int(max_length) + 5
 	else:
@@ -259,7 +264,9 @@ def recording():
 		#response.hangup()
 		print ("Hostname is " + hostname)
 		print ("Testcaseid is " + currentTestCaseid)
-		return redirect(hostname + 'ShowTestResult?TestCaseId='+currentTestCaseid+'', code=307)
+		response.hangup()
+		print ("I am after hangup")
+		#return redirect(hostname + 'ShowTestResult?TestCaseId='+currentTestCaseid+'', code=307)
 	return str(response)
 
 # Show testcase execution result in HTML page
@@ -279,8 +286,6 @@ def ShowTestResult():
 	cur.close()
 	conn.close()
 	fileContent = fileContent + '</body></html>'
-	print ("I am after hangup")
-	response.hangup()
 	return fileContent
 
 # Receive recording metadata
