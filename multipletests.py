@@ -105,8 +105,7 @@ def validateString(testCaseItem):
 		return ""
 	return testCaseItem
 
-Call helper functions for each unique testcaseid
-
+#Call helper functions for each unique testcaseid
 @app.route('/ExecuteTestCase', methods = ['POST'])
 def getDistinctTestCaseIdFromDB():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
