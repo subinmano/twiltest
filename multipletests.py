@@ -51,7 +51,7 @@ def submitFileToDB():
 		f = request.files['fileToUpload']
 		f.save(f.filename)
 		uploadTestCaseToDB(f.filename)
-		createJSONStringForTestCases()
+		#createJSONStringForTestCases()
 	return readTestCasesFromDB()
 
 # Upload test case information to Database
