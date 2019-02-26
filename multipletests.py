@@ -110,7 +110,7 @@ def validateString(testCaseItem):
 def getDistinctTestCaseIdFromDB():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master)
+	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
 	for r in cur:
 		createJSONStringForTestCases(r[0])
 		ExecuteTestCaseUpdateResult(r[0])
