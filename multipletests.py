@@ -44,7 +44,7 @@ databasepassword = os.environ["databasepassword"]
 def load_TestCaseUploadPage():
 	return render_template("FileUpload.html")
 
-# Receive post request from HTML and call helper functions
+# Receive request to upload to db and display - Call functions to upload to DB display on screen
 @app.route('/UploadTestCaseToDB',methods = ['POST'])
 def submitFileToDB():
 	if request.method == 'POST':
@@ -88,10 +88,8 @@ def readTestCasesFromDB():
 	cur = conn.cursor()
 	cur.execute("SELECT * FROM ivr_test_case_master")
 	fileContent = """<html><title>IVR test case Execution</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th></tr>"""
-	testcaseid=""
 	for r in cur:
 		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td></tr>'
-		testcaseid=r[0]
 	cur.close()
 	conn.close()
 	fileContent = fileContent +'<form action="/ExecuteTestCase" method="post" enctype="multipart/form-data"><input type="submit" value="Execute Test Case" name="submit"></form>''<form action="/ShowTestResult?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="submit" value="Show Test Result" name="submit"></form></body></html>'
@@ -105,18 +103,16 @@ def validateString(testCaseItem):
 
 #Call helper functions for each unique testcaseid
 @app.route('/ExecuteTestCase', methods = ['POST'])
-def getDistinctTestCaseIdFromDB():
+def ExecuteTestCase():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
 	for r in cur:
 		createJSONStringForTestCases(r[0])
-		#ExecuteTestCaseUpdateResult(r[0])
-		start(r[0])
+		makecallfortestcase(r[0])
 	return ""
 
 #Create Json of Testcase details and insert to table
-#def createJSONStringForTestCases():
 def createJSONStringForTestCases(testcaseid):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
@@ -154,17 +150,10 @@ def createJSONStringForTestCases(testcaseid):
 	f.write(jsonTestCaseString)
 	return ""
 
-# Submit POST request
-#@app.route('/ExecuteTestCase', methods = ['POST'])
-def ExecuteTestCaseUpdateResult(testcaseid):
-	print ("I have to execute=> " +testcaseid)
-	start(testcaseid)
-	return ""
-
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
 #@app.route('/start', methods=['GET','POST'])
-def start(testcaseid):
+def makecallfortestcase(testcaseid):
 	# Get testcase details as string
 	#testcaseid = request.values.get("TestCaseId", None)
 	filename = testcaseid + ".json"
@@ -285,7 +274,7 @@ def ShowTestResult():
 	fileContent = fileContent + '</body></html>'
 	return fileContent
 
-# Receive recording metadata
+# Receive recording metadata-- Only applicable for Twilio
 @app.route("/recording_stat", methods=['GET', 'POST'])
 def recording_stat():
 	print("I am at recording callback event")
