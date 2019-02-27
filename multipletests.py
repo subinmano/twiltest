@@ -117,11 +117,11 @@ def ExecuteTestCase():
 	for i in range(0,len(listOfTestCases)):
 		if i==len(listOfTestCases)-1:
 			print("Current::"+listOfTestCases[i]+"Next::"+"End")
-			createJSONStringForTestCases(listOfTestCases[i],'end')
+			createJSONStringForTestCases(listOfTestCases[i],'none')
 		else:
 			print("Current::"+listOfTestCases[i]+"Next::"+listOfTestCases[i+1])
 			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1])
-	#makecallfortestcase(listOfTestCase[i])
+	makecallfortestcase(listOfTestCase[i])
 	return ""
 
 #Create Json of Testcase details and insert to table
@@ -221,6 +221,8 @@ def recording():
 		testCaseJSON = json.load(json_file)
 		currentTestCaseid = testCaseJSON["test_case_id"]
 		print ("Test Case ID ==>"+currentTestCaseid)
+		nextTestCaseid = testCaseJSON["next_test_case_id"]
+		print ("Next Test Case ID ==>"+nextTestCaseid)
 		action = testCaseJSON["steps"][int(currentStepCount)]["action"]
 		print("Action is =>" + action)
 		input_type = testCaseJSON["steps"][int(currentStepCount)]["input_type"]
@@ -263,6 +265,8 @@ def recording():
 		print ("Testcaseid is " + currentTestCaseid)
 		response.hangup()
 		print ("I am after hangup")
+		if nextTestCaseid!="none":
+			makecallfortestcase(nextTestCaseid)
 	return str(response)
 
 # Show testcase execution result in HTML page
