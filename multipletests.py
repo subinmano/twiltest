@@ -108,10 +108,20 @@ def ExecuteTestCase():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
+	listOfTestCases=[]
 	for r in cur:
-		createJSONStringForTestCases(r[0])
-		makecallfortestcase(r[0])
-		#time.sleep(60)
+		listOfTestCases.append(r[0])
+	print(listOfTestCases)
+	print("Length of the List1==>"+str(len(listOfTestCase)))
+	i=0
+	for i in range(0,len(listOfTestCases)):
+		if i==len(listOfTestCase)-1:
+			print("Current::"+listOfTestCase[i]+"Next::"+"End")
+			createJSONStringForTestCases(listOfTestCase[i],end)
+		else:
+			print("Current::"+listOfTestCase[i]+"Next::"+listOfTestCase[i+1])
+			createJSONStringForTestCases(listOfTestCase[i],listOfTestCase[i+1])
+	makecallfortestcase(listOfTestCase[i])
 	return ""
 
 #Create Json of Testcase details and insert to table
