@@ -121,15 +121,15 @@ def ExecuteTestCase():
 		else:
 			print("Current::"+listOfTestCase[i]+"Next::"+listOfTestCase[i+1])
 			createJSONStringForTestCases(listOfTestCase[i],listOfTestCase[i+1])
-	makecallfortestcase(listOfTestCase[i])
+	#makecallfortestcase(listOfTestCase[i])
 	return ""
 
 #Create Json of Testcase details and insert to table
-def createJSONStringForTestCases(testcaseid):
+def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master where testcaseid=%s"
-	args = (str(testcaseid))
+	args = (str(currenttestcaseid))
 	cur.execute(query,args)
 	testCaseid=""
 	testCaseStepsCount=""
@@ -144,7 +144,7 @@ def createJSONStringForTestCases(testcaseid):
 	print("testCaseid==>"+testCaseid)
 	print("testCaseStepsCount==>"+str(testCaseStepsCount))
 	print(testCaseStepsList)
-	jsonTestCaseString='{'+'"test_case_id":"'+testCaseid+'","test_steps":"'+str(testCaseStepsCount)+'","steps":['
+	jsonTestCaseString='{'+'"test_case_id":"'+testCaseid+'", "next_test_case_id":"'+nexttestcaseid+'", "test_steps":"'+str(testCaseStepsCount)+'","steps":['
 	for testCaseStepItem in testCaseStepsList:
 		testCaseStepItem=testCaseStepItem.replace('"','')
 		splittedTestCaseItem=testCaseStepItem.split("|")
