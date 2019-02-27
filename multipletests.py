@@ -112,15 +112,15 @@ def ExecuteTestCase():
 	for r in cur:
 		listOfTestCases.append(r[0])
 	print(listOfTestCases)
-	print("Length of the List1==>"+str(len(listOfTestCase)))
+	print("Length of the List1==>"+str(len(listOfTestCases)))
 	i=0
 	for i in range(0,len(listOfTestCases)):
-		if i==len(listOfTestCase)-1:
-			print("Current::"+listOfTestCase[i]+"Next::"+"End")
-			createJSONStringForTestCases(listOfTestCase[i],end)
+		if i==len(listOfTestCases)-1:
+			print("Current::"+listOfTestCases[i]+"Next::"+"End")
+			createJSONStringForTestCases(listOfTestCases[i],end)
 		else:
-			print("Current::"+listOfTestCase[i]+"Next::"+listOfTestCase[i+1])
-			createJSONStringForTestCases(listOfTestCase[i],listOfTestCase[i+1])
+			print("Current::"+listOfTestCases[i]+"Next::"+listOfTestCases[i+1])
+			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1])
 	#makecallfortestcase(listOfTestCase[i])
 	return ""
 
