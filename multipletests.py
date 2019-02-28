@@ -121,7 +121,7 @@ def ExecuteTestCase():
 		else:
 			print("Current::"+listOfTestCases[i]+"Next::"+listOfTestCases[i+1])
 			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1])
-	makecallfortestcase(listOfTestCases[i])
+	makecallfortestcase(listOfTestCases[0])
 	return ""
 
 #Create Json of Testcase details and insert to table
