@@ -8,6 +8,7 @@ import urllib
 from jiwer import wer
 from difflib import SequenceMatcher
 from datetime import datetime
+import sendsms
 
 # Declare global variables
 databasename = os.environ["databasename"]
@@ -31,6 +32,7 @@ def updateResultToDB(recordingURL,recognizedText,recordingDuration,testcaseID,te
 	print(actual_confidence)
 	if actual_confidence<expected_confidence:
 		result = "Fail"
+		sendsms.sendSMS(testcaseID,testCaseStep)
 	else:
 		result = "Pass"
 	execution_status = "completed"
