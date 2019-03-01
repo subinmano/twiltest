@@ -22,8 +22,8 @@ def sendSMS(testcaseID, testCaseStep):
 	client = Client(account_sid, auth_token)
 	#via Signalwire
 	client = signalwire_client(account_sid, auth_token, signalwire_space_url = signalwire_space_url)
-	client.messages.create(from_=smscli,
-	                       to=smsdnis,
-						   body='Please note that  ' +testcaseID+ ' has failed at ' +testCaseStep+ '.'
-						   )
+	client.messages.create(from_=smscli, 
+			       to=smsdnis, 
+			       body='Please note that  ' +testcaseID+ ' has failed at ' +testCaseStep+ '.'
+			      )
 	return ""
