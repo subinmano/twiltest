@@ -7,10 +7,9 @@ sender_email_id = os.environ["fromemailid"]
 sender_email_id_password = os.environ["frompassword"]
 receiver_email_id = os.environ["toemailid"]
 
-def sendEMAIL():
-
-# creates SMTP session 
-s = smtplib.SMTP('smtp.gmail.com', 587) 
+def sendEMAIL(testcaseID, testCaseStep):
+  # creates SMTP session
+  s = smtplib.SMTP('smtp.gmail.com', 587) 
   
 # start TLS for security 
 s.starttls() 
