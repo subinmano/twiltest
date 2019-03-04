@@ -24,9 +24,9 @@ def sendEMAIL(testcaseID, testCaseStep, expected_value, actual_value):
   msg = MIMEMultipart()
   
   # setup the parameters of the message
-  msg['From']=MY_ADDRESS
-  msg['To']=email
-  msg['Subject']="Test Case failure"
+  msg['From']=sender_email_id
+  msg['To']=receiver_email_id
+  msg['Subject']='Test Case failure ' +testcaseID+ '.'
   
   # message to be sent
   message = 'Please note that Test case number ' +testcaseID+ ' has failed at step ' +testCaseStep+ '. The expected response was ' +expected_value+ ' and the actual response was ' +actual_value+ '.'
