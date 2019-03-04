@@ -20,7 +20,7 @@ def sendEMAIL(testcaseID, testCaseStep, expected_value, actual_value):
   s.starttls()
   
   # mail account credentials
-  s.login("sender_email_id", "sender_email_id_password")
+  s.login(sender_email_id, sender_email_id_password)
   
   # create the message
   msg = MIMEMultipart()
