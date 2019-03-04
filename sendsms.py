@@ -11,7 +11,7 @@ from signalwire.rest import Client as signalwire_client
 
 
 # Declare global variables
-smscli = os.environ["smscli"]
+smscli = os.environ["cli"]
 smsdnis = os.environ["smsdnis"]
 account_sid = os.environ["account_sid"]
 auth_token = os.environ["auth_token"]
