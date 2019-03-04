@@ -164,11 +164,6 @@ def makecallfortestcase(testcaseid):
 		testCaseJSON = json.load(json_file)
 		test_case_id = testCaseJSON["test_case_id"]
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
-		max_length = testCaseJSON["steps"][currentStepCount]["prompt_duration"]
-	if max_length!="":
-		max_length = int(max_length) + 5
-	else:
-		max_length = 600
 	print(dnis, cli, test_case_id, max_length)
 	#Twilio API call
 	#client = Client(account_sid, auth_token)
@@ -179,13 +174,15 @@ def makecallfortestcase(testcaseid):
 
 # Twilio/Signalwire functions for record and TTS
 @app.route("/input_action", methods=['GET', 'POST'])
-def recording():
+def input_action():
 	response = VoiceResponse()
 	currentStepCount= request.values.get("StepNumber", None)
 	print("CurrentStepCount is " + currentStepCount)
 	testcaseid = request.values.get("TestCaseId", None)
 	print("testcaseid is " +testcaseid)
-	
+	Callid =  request.values.get("sid", None)
+	CallStatus = request.values.get("status", None)
+		
 	#Get values from json file
 	filename = testcaseid + ".json"
 	with open(filename) as json_file:
@@ -200,20 +197,12 @@ def recording():
 		print("Input Value is =>" + input_value)
 		pause = testCaseJSON["steps"][int(currentStepCount)]["pause"]
 		print("Input Value is =>" + pause)
-		max_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
-		print("Recording Length =>" + max_length)
 	
 	#Check for pause or break needed
 	if pause!="":
 		response.pause(length=int(pause))
 		print("I have paused")
 	
-	#Set maximum length of recording if prompt duration is mentioned or else set maximum length as 600 seconds
-	if max_length!="":
-		max_length = int(max_length) + 5
-	else:
-		max_length = 600
-			
 	if "Reply" in action:
 		if "DTMF" in input_type:
 			print("i am at DTMF input step")
@@ -221,7 +210,6 @@ def recording():
 			session['currentCount']=str(currentStepCount)
 			response.play(digits=input_value)
 			response.redirect(url_for('.input_action', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True))
-			#response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 			
 		if "Say" in input_type:
 			print("i am at Say input step")
@@ -229,7 +217,6 @@ def recording():
 			session['currentCount']=str(currentStepCount)
 			response.say(input_value, voice="alice", language="en-US")
 			response.redirect(url_for('.input_action', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True))
-			#response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	
 	if "Hangup" in action:
 		print ("I am at hangup")
@@ -240,8 +227,8 @@ def recording():
 		execution_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
-		query = "UPDATE ivr_load_test_case_master set count = %s, execution_status = %s, execution_datetime = %s where testcaseid = %s"
-		args = (str(execution_status), str(execution_datetime))
+		query = "UPDATE ivr_load_test_case_master set call_id = %s, call_status = %s, execution_datetime = %s where testcaseid = %s"
+		args = (str(Callid), str(CallStatus), str(execution_status), str(execution_datetime))
 		cur.execute(query,args)
 	return str(response)
 
@@ -255,17 +242,16 @@ def ShowTestResult():
 	query = "SELECT * FROM ivr_load_test_case_master where testcaseid=%s"
 	args = (str(testcaseid))
 	cur.execute(query,args)
-	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th><th>Uploaded date</th><th>Execution status</th><th>Execution date</th></tr>"""
+	fileContent = """<html><title>IVR load test Execution Result</title><body><table border="1"><tr><th>Call ID</th><th>Call Status</th><th>Execution Status</th><th>Execution Date</th></tr>"""
 	for r in cur:
 		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td></tr>'
-		print("R3==>"+r[3])
 	cur.close()
 	conn.close()
 	fileContent = fileContent + '</body></html>'
 	return fileContent
 
-
 if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
 	print ('Starting app on port %d' % port)
 	app.run(debug=False, port=port, host='0.0.0.0')
+	
