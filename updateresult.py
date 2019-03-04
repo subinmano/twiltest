@@ -33,6 +33,7 @@ def updateResultToDB(recordingURL,recognizedText,recordingDuration,testcaseID,te
 	if actual_confidence<expected_confidence:
 		result = "Fail"
 		sendsms.sendSMS(testcaseID,testCaseStep)
+		sendemail.sendEMAIL(testcaseID, testCaseStep, expected_value, recognizedText)
 	else:
 		result = "Pass"
 	execution_status = "completed"
