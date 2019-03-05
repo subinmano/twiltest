@@ -111,7 +111,8 @@ def ExecuteTestCase():
 	testcaseid = request.values.get("TestCaseId", None)
 	numberofCalls = request.form['numberofcalls']
 	for count in range(numberofCalls):
-		makecallfortestcase(testcaseid)
+		#makecallfortestcase(testcaseid)
+		print('Testcase ID: ' +testcaseid)
 		print('Creating call: #', count+1, end='\r')
 		print('Creating call: Completed')
 	return ""
@@ -227,7 +228,7 @@ def input_action():
 		execution_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
-		query = "UPDATE ivr_load_test_case_master set call_id = %s, call_status = %s, execution_datetime = %s where testcaseid = %s"
+		query = "INSERT INTO ivr_load_test_case_master set call_id = %s, call_status = %s, execution_datetime = %s where testcaseid = %s"
 		args = (str(Callid), str(CallStatus), str(execution_status), str(execution_datetime))
 		cur.execute(query,args)
 	return str(response)
