@@ -1,1 +1,1 @@
-web: python multipletests.py
+web: python loadtest.py
