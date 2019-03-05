@@ -18,9 +18,6 @@ from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial
 # Signalwire Helper lirary
 from signalwire.rest import Client as signalwire_client
 from signalwire.voice_response import VoiceResponse
-# Import custom modules
-import transcribe
-import updateresult
 
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
