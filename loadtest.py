@@ -109,7 +109,7 @@ def ExecuteTestCase():
 		#makecallfortestcase(testcaseid)
 		print('Testcase ID: ' +testcaseid)
 		print('Creating call: #', count+1, end='\r')
-		print('Creating call: Completed')
+	print('Creating call: Completed')
 	return ""
 
 #Create Json of Testcase details and insert to table
