@@ -91,7 +91,7 @@ def readTestCasesFromDB():
 		testcaseid=r[0]
 	cur.close()
 	conn.close()
-	fileContent = fileContent +'<form action="/ExecuteTestCase?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="text" name="numberofcalls" placeholder="Enter number of calls to generate here"><input type="submit" value="Execute Test Case" name="submit"></form></body></html>'
+	fileContent = fileContent +'<form action="/ExecuteTestCase?TestCaseId='+testcaseid+'" method="post" enctype="multipart/form-data"><input type="text" name="numberofcalls" placeholder="Enter number of calls"><input type="submit" value="Execute Test Case" name="submit"></form></body></html>'
 	return fileContent
 
 #Validation of testcase upload
