@@ -8,8 +8,6 @@ import sys
 import requests
 import json
 import urllib
-from jiwer import wer
-from difflib import SequenceMatcher
 from datetime import datetime
 import time
 # Twilio Helper Library
@@ -106,7 +104,7 @@ def validateString(testCaseItem):
 @app.route('/ExecuteTestCase', methods = ['POST'])
 def ExecuteTestCase():
 	testcaseid = request.values.get("TestCaseId", None)
-	numberofCalls = request.form['numberofcalls']
+	int(numberofCalls) = request.form['numberofcalls']
 	for count in range(numberofCalls):
 		#makecallfortestcase(testcaseid)
 		print('Testcase ID: ' +testcaseid)
