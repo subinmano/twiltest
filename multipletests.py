@@ -226,13 +226,14 @@ def recording():
 		max_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
 		print("Recording Length =>" + max_length)
 		expected_value=testCaseJSON["steps"][int(currentStepCount)]["expected_value"]
-		print("Expected prompt is =>" + expected_value)
+		speech_context=re.split('\s+', expected_value)
+		print(speech_context)
 	
 	#Only for Signalwire... Not for Twilio
 	RecordingUrl = request.values.get("RecordingUrl", None)
 	RecordingDuration = request.values.get("RecordingDuration", None)
 	print("Recording URL is => " + RecordingUrl)
-	Recognized_text = transcribe.goog_speech2text(RecordingUrl, expected_value)
+	Recognized_text = transcribe.goog_speech2text(RecordingUrl, speech_context)
 	if Recognized_text:
 		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
 		
@@ -309,7 +310,8 @@ def recording_stat():
 	with open(filename) as json_file:
 		testCaseJSON = json.load(json_file)
 		expected_value=testCaseJSON["steps"][int(StepNumber)]["expected_value"]
-		print("Expected prompt is =>" + expected_value)
+		speech_context=re.split('\s+', expected_value)
+		print(speech_context)
 	AccountSid = request.values.get("AccountSid", None)
 	CallSid =  request.values.get("CallSid", None)
 	RecordingSid = request.values.get("RecordingSid", None)
@@ -319,7 +321,7 @@ def recording_stat():
 	RecordingChannels = request.values.get("RecordingChannels", None)
 	RecordingStartTime = request.values.get("RecordingStartTime", None)
 	RecordingSource	= request.values.get("RecordingSource", None)
-	Recognized_text = transcribe.goog_speech2text(RecordingUrl, expected_value)
+	Recognized_text = transcribe.goog_speech2text(RecordingUrl, speech_context)
 	if Recognized_text:
 		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
 	print("testCaseID==>"+str(testCaseID))
