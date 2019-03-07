@@ -128,7 +128,7 @@ def ExecuteTestCase():
 def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	query = "SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master where testcaseid=%s"
+	query = "SELECT testcaseid, action, input_type, input_value, pause_break, expected_value, expected_prompt_duration FROM ivr_test_case_master where testcaseid=%s"
 	args = (str(currenttestcaseid))
 	cur.execute(query,args)
 	testCaseid=""
@@ -136,10 +136,10 @@ def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
 	testCaseStepsList=[]
 	i=0
 	for r in cur:
-		print("R0==>"+r[0]+"R1==>"+r[1]+"R2==>"+r[2]+"R3==>"+r[3]+"R4==>"+r[4]+"R5==>"+r[5])
+		print("R0==>"+r[0]+"R1==>"+r[1]+"R2==>"+r[2]+"R3==>"+r[3]+"R4==>"+r[4]+"R5==>"+r[5]+"R6==>"+r[6])
 		testCaseid=r[0]
 		i=i+1
-		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4]+"|"+r[5])
+		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4]+"|"+r[5]+"|"+r[6])
 	testCaseStepsCount=i
 	print("testCaseid==>"+testCaseid)
 	print("testCaseStepsCount==>"+str(testCaseStepsCount))
@@ -148,7 +148,7 @@ def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
 	for testCaseStepItem in testCaseStepsList:
 		testCaseStepItem=testCaseStepItem.replace('"','')
 		splittedTestCaseItem=testCaseStepItem.split("|")
-		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","prompt_duration":"'+splittedTestCaseItem[4]+'"},'
+		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","expected_value":"'+splittedTestCaseItem[4]+'","prompt_duration":"'+splittedTestCaseItem[4]+'"},'
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
 	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"
@@ -206,14 +206,6 @@ def recording():
 	testcaseid = request.values.get("TestCaseId", None)
 	print("testcaseid is " +testcaseid)
 	
-	#Only for Signalwire... Not for Twilio
-	RecordingUrl = request.values.get("RecordingUrl", None)
-	RecordingDuration = request.values.get("RecordingDuration", None)
-	print("Recording URL is => " + RecordingUrl)
-	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
-	if Recognized_text:
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
-	
 	#Common for both-- Get values from json file
 	filename = testcaseid + ".json"
 	print("CurrentStepCount is " + currentStepCount)
@@ -233,7 +225,17 @@ def recording():
 		print("Input Value is =>" + pause)
 		max_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
 		print("Recording Length =>" + max_length)
+		expected_value=testCaseJSON["steps"][int(currentStepCount)]["expected_value"]
+		print("Expected prompt is =>" + expected_value)
 	
+	#Only for Signalwire... Not for Twilio
+	RecordingUrl = request.values.get("RecordingUrl", None)
+	RecordingDuration = request.values.get("RecordingDuration", None)
+	print("Recording URL is => " + RecordingUrl)
+	Recognized_text = transcribe.goog_speech2text(RecordingUrl, expected_value)
+	if Recognized_text:
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
+		
 	#Check for pause or break needed
 	if pause!="":
 		response.pause(length=int(pause))
@@ -304,6 +306,10 @@ def recording_stat():
 	print("StepNumber==>"+str(StepNumber))
 	testCaseID = request.values.get("currentTestCaseID", None)
 	print("testCaseID==>"+str(testCaseID))
+	with open(filename) as json_file:
+		testCaseJSON = json.load(json_file)
+		expected_value=testCaseJSON["steps"][int(StepNumber)]["expected_value"]
+		print("Expected prompt is =>" + expected_value)
 	AccountSid = request.values.get("AccountSid", None)
 	CallSid =  request.values.get("CallSid", None)
 	RecordingSid = request.values.get("RecordingSid", None)
@@ -313,7 +319,7 @@ def recording_stat():
 	RecordingChannels = request.values.get("RecordingChannels", None)
 	RecordingStartTime = request.values.get("RecordingStartTime", None)
 	RecordingSource	= request.values.get("RecordingSource", None)
-	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
+	Recognized_text = transcribe.goog_speech2text(RecordingUrl, expected_value)
 	if Recognized_text:
 		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
 	print("testCaseID==>"+str(testCaseID))
