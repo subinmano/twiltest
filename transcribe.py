@@ -15,7 +15,7 @@ credentials_dgf = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
 
 # This function calls Google STT and then returns recognition as text
 #@app.route('/goog_speech2text', methods=['GET', 'POST'])
-def goog_speech2text(RecordingUrl):
+def goog_speech2text(RecordingUrl, expectedValue):
 	#Generate Google STT Credentials
 	service_account_info = json.loads(credentials_dgf)
 	credentials = service_account.Credentials.from_service_account_info(service_account_info)
@@ -35,8 +35,8 @@ def goog_speech2text(RecordingUrl):
 		sample_rate_hertz=8000,
 		language_code='en-US',
 		# Setting speech context as expected prompt
-		#speech_contexts=[speech.types.SpeechContext(
-			#phrases=[expectedValue])]
+		speech_contexts=[speech.types.SpeechContext(
+			phrases=[expectedValue])]
 		# Enhanced models are only available to projects that opt in for audio data collection
 		use_enhanced=True,
 		# Specify the model for the enhanced model usage.
