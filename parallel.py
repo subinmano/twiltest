@@ -122,6 +122,17 @@ def validateString(testCaseItem):
 		return ""
 	return testCaseItem
 
+#Call helper functions for each unique testcaseid
+@app.route('/ExecuteTestCase', methods = ['POST'])
+def ExecuteTestCase():
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
+	for r in cur:
+		createJSONStringForTestCases(r[0])
+		makecallfortestcase(r[0])
+	return ""
+
 #Create Json of Testcase details and insert to table
 def createJSONStringForTestCases():
 #def createJSONStringForTestCases(testcaseid):
@@ -160,22 +171,10 @@ def createJSONStringForTestCases():
 	f.write(jsonTestCaseString)
 	return ""
 
-# Submit POST request
-@app.route('/ExecuteTestCase', methods = ['POST'])
-def ExecuteTestCaseUpdateResult():
-	testcaseid = request.values.get("TestCaseId", None)
-	start(testcaseid)
-	return ""
-	#hostname = request.url_root
-	#print(hostname)
-	#return redirect(hostname + 'start?TestCaseId='+testcaseid+'', code=307)
-
 #############################################################Record Utterances################################################################
 #Receive the POST request from Execute Test Case
 #@app.route('/start', methods=['GET','POST'])
-def start(testcaseid):
-	# Get testcase details as string
-	#testcaseid = request.values.get("TestCaseId", None)
+def makecallfortestcase(testcaseid):
 	filename = testcaseid + ".json"
 	session['currentCount']=0
 	currentStepCount=0
@@ -266,11 +265,17 @@ def recording():
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	
 	if "Hangup" in action:
-		hostname = request.url_root
-		#response.hangup()
-		print ("Hostname is " + hostname)
+		print ("I am at hangup")
 		print ("Testcaseid is " + currentTestCaseid)
-		return redirect(hostname + 'ShowTestResult?TestCaseId='+currentTestCaseid+'', code=307)
+		response.hangup()
+		print ("I am after hangup")
+		execution_status = "completed"
+		execution_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+		cur = conn.cursor()
+		query = "UPDATE ivr_test_case_master set execution_status = %s, execution_datetime = %s where testcaseid = %s and action = %s"
+		args = (str(execution_status), str(execution_datetime), currentTestCaseid, 'Hangup')
+		cur.execute(query,args)
 	return str(response)
 
 # Show testcase execution result in HTML page
@@ -294,7 +299,7 @@ def ShowTestResult():
 	response.hangup()
 	return fileContent
 
-# Receive recordng metadata
+# Receive recordng metadata --- only for twilio
 @app.route("/recording_stat", methods=['GET', 'POST'])
 def recording_stat():
 	print("I am at recording callback event")
