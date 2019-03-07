@@ -274,7 +274,7 @@ def recording():
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
 		query = "UPDATE ivr_test_case_master set execution_status = %s, execution_datetime = %s where testcaseid = %s and action = %s"
-		args = (str(execution_status), str(execution_datetime), 'Hangup')
+		args = (str(execution_status), str(execution_datetime), currentTestCaseid, 'Hangup')
 		cur.execute(query,args)
 		if nextTestCaseid!="none":
 			makecallfortestcase(nextTestCaseid)
