@@ -36,7 +36,7 @@ def goog_speech2text(RecordingUrl, expectedValue):
 		language_code='en-US',
 		# Setting speech context as expected prompt
 		speech_contexts=[speech.types.SpeechContext(
-			phrases=[expectedValue])],
+			phrases=expectedValue)],
 		# Enhanced models are more expensive than standard models
 		use_enhanced=True,
 		# Specify the model for the enhanced model usage.
