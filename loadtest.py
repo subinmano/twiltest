@@ -116,16 +116,16 @@ def ExecuteTestCase():
 def createJSONStringForTestCases():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break, expected_prompt_duration FROM ivr_test_case_master")
+	cur.execute("SELECT testcaseid, action, input_type, input_value, pause_break, expected_value, expected_prompt_duration FROM ivr_test_case_master")
 	testCaseid=""
 	testCaseStepsCount=""
 	testCaseStepsList=[]
 	i=0
 	for r in cur:
-		print("R0==>"+r[0]+"R1==>"+r[1]+"R2==>"+r[2]+"R3==>"+r[3]+"R4==>"+r[4]+"R5==>"+r[5])
+		print("R0==>"+r[0]+"R1==>"+r[1]+"R2==>"+r[2]+"R3==>"+r[3]+"R4==>"+r[4]+"R5==>"+r[5]+"R6==>"+r[6])
 		testCaseid=r[0]
 		i=i+1
-		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4]+"|"+r[5])
+		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4]+"|"+r[5]+"|"+r[6])
 	testCaseStepsCount=i
 	print("testCaseid==>"+testCaseid)
 	print("testCaseStepsCount==>"+str(testCaseStepsCount))
@@ -134,7 +134,7 @@ def createJSONStringForTestCases():
 	for testCaseStepItem in testCaseStepsList:
 		testCaseStepItem=testCaseStepItem.replace('"','')
 		splittedTestCaseItem=testCaseStepItem.split("|")
-		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","prompt_duration":"'+splittedTestCaseItem[4]+'"},'
+		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","expected_value":"'+splittedTestCaseItem[4]+'","prompt_duration":"'+splittedTestCaseItem[5]+'"},'
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
 	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"
