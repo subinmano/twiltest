@@ -106,7 +106,7 @@ def ExecuteTestCase():
 	testcaseid = request.values.get("TestCaseId", None)
 	numberofCalls = request.form['numberofcalls']
 	for count in range(int(numberofCalls)):
-		#makecallfortestcase(testcaseid)
+		makecallfortestcase(testcaseid)
 		print('Testcase ID: ' +testcaseid)
 		print('Creating call: #', count+1, end='\r')
 		print('Creating call: Completed')
