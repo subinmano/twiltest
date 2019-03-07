@@ -207,6 +207,14 @@ def recording():
 	testcaseid = request.values.get("TestCaseId", None)
 	print("testcaseid is " +testcaseid)
 	
+	#Only for Signalwire... Not for Twilio
+	RecordingUrl = request.values.get("RecordingUrl", None)
+	RecordingDuration = request.values.get("RecordingDuration", None)
+	print("Recording URL is => " + RecordingUrl)
+	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
+	if Recognized_text:
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
+		
 	#Common for both-- Get values from json file
 	filename = testcaseid + ".json"
 	print("CurrentStepCount is " + currentStepCount)
@@ -226,17 +234,9 @@ def recording():
 		print("Input Value is =>" + pause)
 		max_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
 		print("Recording Length =>" + max_length)
-		expected_value=testCaseJSON["steps"][int(currentStepCount)]["expected_value"]
-		speech_context=re.split('\s+', expected_value)
-		print(speech_context)
-	
-	#Only for Signalwire... Not for Twilio
-	RecordingUrl = request.values.get("RecordingUrl", None)
-	RecordingDuration = request.values.get("RecordingDuration", None)
-	print("Recording URL is => " + RecordingUrl)
-	Recognized_text = transcribe.goog_speech2text(RecordingUrl, speech_context)
-	if Recognized_text:
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
+		#expected_value=testCaseJSON["steps"][int(currentStepCount)]["expected_value"]
+		#speech_context=re.split('\s+', expected_value)
+		#print(speech_context)
 		
 	#Check for pause or break needed
 	if pause!="":
@@ -308,11 +308,6 @@ def recording_stat():
 	print("StepNumber==>"+str(StepNumber))
 	testCaseID = request.values.get("currentTestCaseID", None)
 	print("testCaseID==>"+str(testCaseID))
-	with open(filename) as json_file:
-		testCaseJSON = json.load(json_file)
-		expected_value=testCaseJSON["steps"][int(StepNumber)]["expected_value"]
-		speech_context=re.split('\s+', expected_value)
-		print(speech_context)
 	AccountSid = request.values.get("AccountSid", None)
 	CallSid =  request.values.get("CallSid", None)
 	RecordingSid = request.values.get("RecordingSid", None)
@@ -322,7 +317,7 @@ def recording_stat():
 	RecordingChannels = request.values.get("RecordingChannels", None)
 	RecordingStartTime = request.values.get("RecordingStartTime", None)
 	RecordingSource	= request.values.get("RecordingSource", None)
-	Recognized_text = transcribe.goog_speech2text(RecordingUrl, speech_context)
+	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
 		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
 	print("testCaseID==>"+str(testCaseID))
@@ -333,4 +328,3 @@ if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
 	print ('Starting app on port %d' % port)
 	app.run(debug=False, port=port, host='0.0.0.0')
-	
