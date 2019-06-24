@@ -11,6 +11,8 @@ import urllib
 from jiwer import wer
 from difflib import SequenceMatcher
 from datetime import datetime
+import time
+import re
 # Twilio Helper Library
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Record, Gather, Say, Dial, Play
@@ -87,19 +89,7 @@ def uploadTestCaseToDB(uploadedFileName):
 		cur.close()
 		conn.close()
 		return ""
-
-#Call helper functions for each unique testcaseid
-#def getDistinctTestCaseIdFromDB():
-	#conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	#cur = conn.cursor()
-	#cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master")
-	#testcaseidstring=[]
-	#for r in cur:
-		#testcasesidstring=testcaseidstring + "|" + r[0]
-		#testcaseidstring.append(r[0])
-
-
-
+	
 #Get test case details from Database and display in HTML page
 def readTestCasesFromDB():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
