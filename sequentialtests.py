@@ -53,7 +53,10 @@ def submitFileToDB():
 		f = request.files['fileToUpload']
 		f.save(f.filename)
 		uploadTestCaseToDB(f.filename)
+		#checktestcasetype(f.filename)
 	return readTestCasesFromDB()
+
+
 
 # Upload test case information to Database
 def uploadTestCaseToDB(uploadedFileName):
