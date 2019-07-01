@@ -38,7 +38,7 @@ def uploadTestCaseTodynamicDB(uploadedFileName):
 			uploadDatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 			inputDynamicParam = TestCaseLine[9]
 			outputDynamicParam = TestCaseLine[10]
-      query = "INSERT INTO ivr_dynamic_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence, uploaded_date,input_dynamic_param,output_dynamic_param) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+      			query = "INSERT INTO ivr_dynamic_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence, uploaded_date,input_dynamic_param,output_dynamic_param) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 			args = (caseID,caseStepID,actionType,inputType,inputValue,inputPause,expectedValue,promptDuration,expectedConfidence,uploadDatetime,inputDynamicParam,outputDynamicParam)
 			if i!=0:
 				cur.execute(query,args)
@@ -105,7 +105,7 @@ def formJsonObjForAllParam(paramList):
 			#print("jsonString::"+jsonString[:-1])
 			jsonString = jsonString.replace("\n","")
 			jsonString = jsonString[:-1] + '],'
-  jsonString = jsonString[:-1] + '}'
+  	jsonString = jsonString[:-1] + '}'
 	#print("jsonString::"+jsonString)
 	jsonData = json.loads(jsonString)
 	#print (jsonData['source'][0])
@@ -140,7 +140,7 @@ def ExpandAndUpdateDynamicTestCase(paramJsonObj,dynamicParamLen,testCaseID):
 					replacedValue=replacedValue.replace(onlyParamName[0],paramJsonObj[onlyParamName[0]][i])
 					inputValue=replacedValue
 				#print("replacedValue::"+replacedValue)
-      if len(r[12])>2:
+			if len(r[12])>2:
 				replacedValue=r[6]
 				rawDynamicParam=r[12]
 				processedDynamicParam = rawDynamicParam.split(";")
@@ -155,7 +155,7 @@ def ExpandAndUpdateDynamicTestCase(paramJsonObj,dynamicParamLen,testCaseID):
 			inputValue = inputValue.replace('}','',2)
 			outputValue = outputValue.replace('}','',2)
 			outputValue = outputValue.replace('{','',2)
-      print("inputValue::"+inputValue+"::Output::replacedValue::"+outputValue)		
+      			print("inputValue::"+inputValue+"::Output::replacedValue::"+outputValue)		
 			#print("Output::replacedValue::"+replacedValue)
 			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration) values (%s,%s,%s,%s,%s,%s,%s,%s)"
 			print(r[0]+"|"+r[1]+"|"+r[2]+"|"+r[3]+"|"+inputValue+"|"+r[5]+"|"+outputValue+"|"+r[7])
