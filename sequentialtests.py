@@ -54,10 +54,29 @@ def submitFileToDB():
 		f.save(f.filename)
 		uploadTestCaseToDB(f.filename)
 		#checktestcasetype(f.filename)
+	#return ""
 	return readTestCasesFromDB()
-
-
-
+'''
+# Receive post request from HTML and call helper functions	
+def checktestcasetype(uploadedFileName):
+	with open(uploadedFileName, "r") as ins:
+		i=0
+		for line in ins:
+			TestCaseLine = line.split(",")
+			if TestCaseLine[9] == "Input Dynamic Param":
+				param.uploadTestCaseTodynamicDB(uploadedFileName)
+				testCases = param.getDistinctTestCaseIdFromDB()
+				for eachTestCase in testCases:
+					paramListString=param.formSingleParamString(eachTestCase)
+					jsonParamObj=param.formJsonObjForAllParam(paramListString)
+					print("maxParamLength::"+str(jsonParamObj['dynamicParamLength']))
+					param.ExpandAndUpdateDynamicTestCase(jsonParamObj,jsonParamObj['dynamicParamLength'],eachTestCase)
+					print('paramListString::'+paramListString)
+					return readTestCasesFromDB()
+			else:
+				uploadTestCaseToDB(uploadedFileName)
+				return readTestCasesFromDB()
+'''
 # Upload test case information to Database
 def uploadTestCaseToDB(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
