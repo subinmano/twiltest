@@ -57,8 +57,8 @@ def submitFileToDB():
 		#checktestcasetype(f.filename)
 	#return ""
 	return readTestCasesFromDB()
-'''
-# Receive post request from HTML and call helper functions	
+
+# Receive post request from HTML and perform actions based on dynamic parameters or static parameters	
 def checktestcasetype(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
 		TestCaseLine = ins[0].split(",")
@@ -74,7 +74,7 @@ def checktestcasetype(uploadedFileName):
 			else:
 				uploadTestCaseToDB(uploadedFileName)
 	return readTestCasesFromDB()
-'''
+
 # Upload test case information to Database
 def uploadTestCaseToDB(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
@@ -142,7 +142,7 @@ def ExecuteTestCase():
 		else:
 			print("Current::"+listOfTestCases[i]+"Next::"+listOfTestCases[i+1])
 			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1])
-	makecallfortestcase(listOfTestCases[0])
+	#makecallfortestcase(listOfTestCases[0])
 	return ""
 
 #Create Json of Testcase details and insert to table
