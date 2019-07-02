@@ -53,15 +53,14 @@ def submitFileToDB():
 	if request.method == 'POST':
 		f = request.files['fileToUpload']
 		f.save(f.filename)
-		uploadTestCaseToDB(f.filename)
-		#checktestcasetype(f.filename)
-	#return ""
+		#uploadTestCaseToDB(f.filename)
+		checktestcasetype(f.filename)
 	return readTestCasesFromDB()
 
 # Receive post request from HTML and perform actions based on dynamic parameters or static parameters	
 def checktestcasetype(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
-		TestCaseLine = ins[0].split(",")
+		TestCaseLine = ins.readline().split(",")
 		if TestCaseLine[9] == "Input Dynamic Param":
 			param.uploadTestCaseTodynamicDB(uploadedFileName)
 			testCases = param.getDistinctTestCaseIdFromDB()
@@ -71,11 +70,11 @@ def checktestcasetype(uploadedFileName):
 				print("maxParamLength::"+str(jsonParamObj['dynamicParamLength']))
 				param.ExpandAndUpdateDynamicTestCase(jsonParamObj,jsonParamObj['dynamicParamLength'],eachTestCase)
 				print('paramListString::'+paramListString)
-			else:
-				uploadTestCaseToDB(uploadedFileName)
-	return readTestCasesFromDB()
+		else:
+			uploadTestCaseToDB(uploadedFileName)
+	return ""
 
-# Upload test case information to Database
+# Upload static test case information to Database
 def uploadTestCaseToDB(uploadedFileName):
 	with open(uploadedFileName, "r") as ins:
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
