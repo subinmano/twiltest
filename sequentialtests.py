@@ -22,7 +22,7 @@ from signalwire.voice_response import VoiceResponse
 # Import custom modules
 import transcribe
 import updateresult
-import params
+import param
 
 #Initiate Flask app
 app = Flask(__name__,template_folder='template')
