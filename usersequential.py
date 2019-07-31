@@ -130,7 +130,7 @@ def checktestcasetype(uploadedFileName):
 				paramListString=param.formSingleParamString(eachTestCase)
 				jsonParamObj=param.formJsonObjForAllParam(paramListString)
 				print("maxParamLength::"+str(jsonParamObj['dynamicParamLength']))
-				param.ExpandAndUpdateDynamicTestCase(jsonParamObj,jsonParamObj['dynamicParamLength'],eachTestCase)
+				param.ExpandAndUpdateDynamicTestCase(jsonParamObj,jsonParamObj['dynamicParamLength'],eachTestCase,currentUserName)
 				print('paramListString::'+paramListString)
 		else:
 			uploadTestCaseToDB(uploadedFileName)
