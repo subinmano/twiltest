@@ -120,11 +120,12 @@ def submitFileToDB():
 
 # Receive post request from HTML and perform actions based on dynamic parameters or static parameters	
 def checktestcasetype(uploadedFileName):
+	currentUserName = session['username']
 	with open(uploadedFileName, "r") as ins:
 		TestCaseLine = ins.readline().split(",")
 		if TestCaseLine[9] == "Input Dynamic Param":
-			param.uploadTestCaseTodynamicDB(uploadedFileName)
-			testCases = param.getDistinctTestCaseIdFromDB()
+			param.uploadTestCaseTodynamicDB(uploadedFileName, currentUserName)
+			testCases = param.getDistinctTestCaseIdFromDB(currentUserName)
 			for eachTestCase in testCases:
 				paramListString=param.formSingleParamString(eachTestCase)
 				jsonParamObj=param.formJsonObjForAllParam(paramListString)
