@@ -47,6 +47,10 @@ databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
 
+#Set key for session variables
+SECRET_KEY = os.environ["SECRET_KEY"]
+app.secret_key=SECRET_KEY
+
 ###############################################################User Management####################################################################
 #Render the Login page
 @auth.route('/login')
