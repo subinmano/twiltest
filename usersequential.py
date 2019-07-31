@@ -1,5 +1,3 @@
-# auth.py
-
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #import python modules
