@@ -1,1 +1,1 @@
-web: python sequentialtests.py
+web: python usersequential.py
