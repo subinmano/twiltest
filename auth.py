@@ -46,7 +46,7 @@ databasename = os.environ["databasename"]
 databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
-datasbase_uri = os.environ["database_uri"]
+database_uri = os.environ["database_uri"]
 
 #Set key for session variables
 #SECRET_KEY = os.environ["SECRET_KEY"]
