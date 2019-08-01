@@ -48,8 +48,8 @@ databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
 
 #Set key for session variables
-SECRET_KEY = os.environ["SECRET_KEY"]
-app.secret_key=SECRET_KEY
+#SECRET_KEY = os.environ["SECRET_KEY"]
+#app.secret_key=SECRET_KEY
 
 ###############################################################User Management####################################################################
 #Render the Login page
@@ -138,7 +138,7 @@ def checktestcasetype(uploadedFileName):
 				print('paramListString::'+paramListString)
 		else:
 			uploadTestCaseToDB(uploadedFileName)
-	return()
+	return ""
 
 # Upload static test case information to Database
 def uploadTestCaseToDB(uploadedFileName):
@@ -169,7 +169,7 @@ def uploadTestCaseToDB(uploadedFileName):
 		conn.commit()
 		cur.close()
 		conn.close()
-		return()
+		return ""
 
 #Get test case details from Database and display in HTML page
 @auth.route('/ReadTestCase')
@@ -192,7 +192,7 @@ def validateString(testCaseItem):
 		return ""
 	return testCaseItem
 
-#Call helper functions for each unique testcaseid
+#Create json of the testcase and call make call
 @auth.route('/ExecuteTestCase', methods = ['POST'])
 def ExecuteTestCase():
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
@@ -207,29 +207,29 @@ def ExecuteTestCase():
 	for i in range(0,len(listOfTestCases)):
 		if i==len(listOfTestCases)-1:
 			print("Current::"+listOfTestCases[i]+"Next::"+"End")
-			createJSONStringForTestCases(listOfTestCases[i],'none')
+			createJSONStringForTestCases(listOfTestCases[i],'none',session['username'])
 		else:
 			print("Current::"+listOfTestCases[i]+"Next::"+listOfTestCases[i+1])
-			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1])
-	#makecallfortestcase(listOfTestCases[0])
-	return()
+			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1],session['username'])
+	#makecallfortestcase(listOfTestCases[0],session['username'])
+	return redirect(url_for('main.profile'))
 
 #Create Json of Testcase details and insert to table
 def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	query = "SELECT testcaseid, action, input_type, input_value, pause_break, expected_value, expected_prompt_duration FROM ivr_test_case_master where testcaseid=%s"
-	args = (str(currenttestcaseid))
+	query = "SELECT testcaseid, action, input_type, input_value, pause_break, expected_value, expected_prompt_duration,username FROM ivr_test_case_master where testcaseid=%s and username=%s"
+	args = (str(currenttestcaseid),currentUserName)
 	cur.execute(query,args)
 	testCaseid=""
 	testCaseStepsCount=""
 	testCaseStepsList=[]
 	i=0
 	for r in cur:
-		print("R0==>"+r[0]+"R1==>"+r[1]+"R2==>"+r[2]+"R3==>"+r[3]+"R4==>"+r[4]+"R5==>"+r[5]+"R6==>"+r[6])
+		print("R0==>"+r[0]+"R1==>"+r[1]+"R2==>"+r[2]+"R3==>"+r[3]+"R4==>"+r[4]+"R5==>"+r[5]+"R6==>"+r[6]+"R7==>"+r[7])
 		testCaseid=r[0]
 		i=i+1
-		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4]+"|"+r[5]+"|"+r[6])
+		testCaseStepsList.append(r[1]+"|"+r[2]+"|"+r[3]+"|"+r[4]+"|"+r[5]+"|"+r[6]+"|"+r[7])
 	testCaseStepsCount=i
 	print("testCaseid==>"+testCaseid)
 	print("testCaseStepsCount==>"+str(testCaseStepsCount))
@@ -238,11 +238,11 @@ def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
 	for testCaseStepItem in testCaseStepsList:
 		testCaseStepItem=testCaseStepItem.replace('"','')
 		splittedTestCaseItem=testCaseStepItem.split("|")
-		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","expected_value":"'+splittedTestCaseItem[4]+'","prompt_duration":"'+splittedTestCaseItem[5]+'"},'
+		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","expected_value":"'+splittedTestCaseItem[4]+'","prompt_duration":"'+splittedTestCaseItem[5]+'","user_name":"'+splittedTestCaseItem[6]+'"}'
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
-	query = "INSERT INTO ivr_test_case_json(test_case_id, test_case_json) values (%s,%s)"
-	args = (testCaseid,jsonTestCaseString)
+	query = "INSERT INTO ivr_test_case_json(testcaseid,test_case_json,username) values (%s,%s,%s)"
+	args = (testCaseid,jsonTestCaseString,currentUserName)
 	cur.execute(query,args)
 	conn.commit()
 	cur.close()
@@ -255,11 +255,12 @@ def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
 #############################################################Telephony activities################################################################
 #Receive the POST request from Execute Test Case
 #@auth.route('/start', methods=['GET','POST'])
-def makecallfortestcase(testcaseid):
+def makecallfortestcase(testcaseid, username):
 	# Get testcase details as string
 	#testcaseid = request.values.get("TestCaseId", None)
 	filename = testcaseid + ".json"
 	session['currentCount']=0
+	session['username']=username
 	currentStepCount=0
 	with open(filename) as json_file:
 		testCaseJSON = json.load(json_file)
@@ -302,7 +303,7 @@ def recording():
 	print("Recording URL is => " + RecordingUrl)
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount)
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount,session['username'])
 		
 	#Common for both-- Get values from json file
 	filename = testcaseid + ".json"
@@ -362,11 +363,11 @@ def recording():
 		execution_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
-		query = "UPDATE ivr_test_case_master set execution_status = %s, execution_datetime = %s where testcaseid = %s and action = %s"
-		args = (str(execution_status), str(execution_datetime), currentTestCaseid, 'Hangup')
+		query = "UPDATE ivr_test_case_master set execution_status = %s, execution_datetime = %s where testcaseid = %s and username =%s and action = %s"
+		args = (str(execution_status), str(execution_datetime), currentTestCaseid, session['username'], 'Hangup')
 		cur.execute(query,args)
 		if nextTestCaseid!="none":
-			makecallfortestcase(nextTestCaseid)
+			makecallfortestcase(nextTestCaseid,session['username'])
 	return str(response)
 
 # Show testcase execution result in HTML page
@@ -376,8 +377,8 @@ def ShowTestResult():
 	testcaseid = request.values.get("TestCaseId", None)
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s"
-	args = (str(testcaseid))
+	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s and username=%s"
+	args = (str(testcaseid),session['username'])
 	cur.execute(query,args)
 	fileContent = """<html><title>IVR test case Execution Result</title><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th><th>Uploaded date</th><th>Execution status</th><th>Execution date</th></tr>"""
 	for r in cur:
@@ -408,7 +409,7 @@ def recording_stat():
 	RecordingSource	= request.values.get("RecordingSource", None)
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber)
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber,session['username'])
 	print("testCaseID==>"+str(testCaseID))
 	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
 	return()
