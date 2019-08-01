@@ -40,7 +40,7 @@ def uploadTestCaseTodynamicDB(uploadedFileName,currentUserName):
 			outputDynamicParam = TestCaseLine[10]
 			query = "INSERT INTO ivr_dynamic_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence, uploaded_date,input_dynamic_param,output_dynamic_param,username) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 			args = (caseID,caseStepID,actionType,inputType,inputValue,inputPause,expectedValue,promptDuration,expectedConfidence,uploadDatetime,inputDynamicParam,outputDynamicParam,currentUserName)
-      			if i!=0:
+			if i!=0:
 				cur.execute(query,args)
 			else:
 				i=i+1
@@ -53,7 +53,7 @@ def uploadTestCaseTodynamicDB(uploadedFileName,currentUserName):
 def getDistinctTestCaseIdFromDB(currentUserName):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT distinct(testcaseid) FROM ivr_dynamic_test_case_master where username = '"+currentUserName+"'"")
+	cur.execute("SELECT distinct(testcaseid), username FROM ivr_dynamic_test_case_master where username = '"+currentUserName+"'")
 	testcaseidstring=[]
 	for r in cur:
 		testcaseidstring.append(r[0])
@@ -68,11 +68,8 @@ def formSingleParamString(testCaseID):
 	cur.execute("SELECT input_dynamic_param from ivr_dynamic_test_case_master where testcaseid = '"+testCaseID+"'")
 	paramList = ''
 	for r in cur:
-		#print("Param::"+r[0]+"Leng::"+str(len(r[0])))
 		if len(r[0])>2:
-			#print("Param::"+r[0]+"Leng::"+str(len(r[0])))
 			paramList = paramList + r[0] + '^'
-			
 	cur.execute("SELECT output_dynamic_param from ivr_dynamic_test_case_master where testcaseid = '"+testCaseID+"'")
 	for s in cur:
 		#print("Param::"+r[0]+"Leng::"+str(len(r[0])))
