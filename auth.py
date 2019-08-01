@@ -217,7 +217,7 @@ def ExecuteTestCase():
 	return redirect(url_for('main.profile'))
 
 #Create Json of Testcase details and insert to table
-def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
+def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid,currentUserName):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
 	query = "SELECT testcaseid, action, input_type, input_value, pause_break, expected_value, expected_prompt_duration,username FROM ivr_test_case_master where testcaseid=%s and username=%s"
@@ -257,7 +257,7 @@ def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid):
 #############################################################Telephony activities################################################################
 #Receive the POST request from Execute Test Case
 #@auth.route('/start', methods=['GET','POST'])
-def makecallfortestcase(testcaseid, username):
+def makecallfortestcase(testcaseid,username):
 	# Get testcase details as string
 	#testcaseid = request.values.get("TestCaseId", None)
 	filename = testcaseid + ".json"
