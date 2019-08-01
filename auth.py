@@ -425,7 +425,7 @@ if __name__ == '__main__':
 
 	app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
 	#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://infypoc:infypoc123@CHNMCT105080L/ivr_test_case'
-	app.config['SQLALCHEMY_DATABASE_URI'] = databaseuri
+	app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 
 	db.init_app(app)
 
