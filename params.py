@@ -19,7 +19,7 @@ databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
 
 # Upload test case information to Database
-def uploadTestCaseTodynamicDB(uploadedFileName):
+def uploadTestCaseTodynamicDB(uploadedFileName,currentUserName):
 	with open(uploadedFileName, "r") as ins:
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
@@ -38,9 +38,9 @@ def uploadTestCaseTodynamicDB(uploadedFileName):
 			uploadDatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 			inputDynamicParam = TestCaseLine[9]
 			outputDynamicParam = TestCaseLine[10]
-      			query = "INSERT INTO ivr_dynamic_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence, uploaded_date,input_dynamic_param,output_dynamic_param) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-			args = (caseID,caseStepID,actionType,inputType,inputValue,inputPause,expectedValue,promptDuration,expectedConfidence,uploadDatetime,inputDynamicParam,outputDynamicParam)
-			if i!=0:
+			query = "INSERT INTO ivr_dynamic_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence, uploaded_date,input_dynamic_param,output_dynamic_param,username) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+			args = (caseID,caseStepID,actionType,inputType,inputValue,inputPause,expectedValue,promptDuration,expectedConfidence,uploadDatetime,inputDynamicParam,outputDynamicParam,currentUserName)
+      			if i!=0:
 				cur.execute(query,args)
 			else:
 				i=i+1
@@ -50,10 +50,10 @@ def uploadTestCaseTodynamicDB(uploadedFileName):
 		return ""
 
 #Get Distinct TestcaseID from the table	
-def getDistinctTestCaseIdFromDB():
+def getDistinctTestCaseIdFromDB(currentUserName):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT distinct(testcaseid) FROM ivr_dynamic_test_case_master")
+	cur.execute("SELECT distinct(testcaseid) FROM ivr_dynamic_test_case_master where username = '"+currentUserName+"'"")
 	testcaseidstring=[]
 	for r in cur:
 		testcaseidstring.append(r[0])
@@ -114,14 +114,14 @@ def formJsonObjForAllParam(paramList):
 	return jsonData
 
 # Create individual test case for every dynamic parameter and insert to Database
-def ExpandAndUpdateDynamicTestCase(paramJsonObj,dynamicParamLen,testCaseID):
+def ExpandAndUpdateDynamicTestCase(paramJsonObj,dynamicParamLen,testCaseID,currentUserName):
 	i=0
 	for i in range(dynamicParamLen):
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		connIns = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
 		insCur = connIns.cursor()
-		cur.execute("SELECT testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration,expected_confidence,actual_value,result,input_dynamic_param,output_dynamic_param from ivr_dynamic_test_case_master where testcaseid = '"+testCaseID+"'")
+		cur.execute("SELECT testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration,expected_confidence,actual_value,result,input_dynamic_param,output_dynamic_param,username from ivr_dynamic_test_case_master where testcaseid = '"+testCaseID+"' and username = '"+currentUserName+"'")
 		paramList = ''
 		#print("maxParamLength::"+str(dynamicParamLen))
 		for r in cur:
@@ -155,16 +155,15 @@ def ExpandAndUpdateDynamicTestCase(paramJsonObj,dynamicParamLen,testCaseID):
 			inputValue = inputValue.replace('}','',2)
 			outputValue = outputValue.replace('}','',2)
 			outputValue = outputValue.replace('{','',2)
-      			print("inputValue::"+inputValue+"::Output::replacedValue::"+outputValue)		
+      			print("inputValue::"+inputValue+"::Output::replacedValue::"+outputValue)
 			#print("Output::replacedValue::"+replacedValue)
-			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration) values (%s,%s,%s,%s,%s,%s,%s,%s)"
-			print(r[0]+"|"+r[1]+"|"+r[2]+"|"+r[3]+"|"+inputValue+"|"+r[5]+"|"+outputValue+"|"+r[7])
-			args = (r[0]+"_"+str(i+1),r[1],r[2],r[3],inputValue,r[5],outputValue,r[7])
+		    	query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence,uploaded_date,username) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+			print(r[0]+"|"+r[1]+"|"+r[2]+"|"+r[3]+"|"+inputValue+"|"+r[5]+"|"+outputValue+"|"+r[7]+"|"+r[8]+"|"+uploadDatetime+"|"+currentUserName)
+			args = (r[0]+"_"+str(i+1),r[1],r[2],r[3],inputValue,r[5],outputValue,r[7],r[8],uploadDatetime,currentUserName)
 			insCur.execute(query,args)
 			connIns.commit()
 	insCur.close()
 	conn.close()
 	connIns.close()
 	cur.close()
-			#print("Param::"+r[0]+"Leng::"+str(len(r[0])))
 	return ""
