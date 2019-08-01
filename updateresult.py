@@ -18,11 +18,11 @@ databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
 
 #@app.route('/Result',methods = ['POST'])
-def updateResultToDB(recordingURL,recognizedText,recordingDuration,testcaseID,testCaseStep):
+def updateResultToDB(recordingURL,recognizedText,recordingDuration,testcaseID,testCaseStep,username):
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	query = "SELECT expected_value, expected_confidence FROM ivr_test_case_master where testcaseid = %s and testcasestepid = %s"
-	args = (str(testcaseID),testCaseStep)
+	query = "SELECT expected_value, expected_confidence FROM ivr_test_case_master where testcaseid = %s and testcasestepid = %s and username = %s"
+	args = (str(testcaseID),testCaseStep,username)
 	cur.execute(query,args)
 	for r in cur:
 		expected_value = r[0]
@@ -33,14 +33,14 @@ def updateResultToDB(recordingURL,recognizedText,recordingDuration,testcaseID,te
 	print(actual_confidence)
 	if actual_confidence<expected_confidence:
 		result = "Fail"
-		#sendsms.sendSMS(testcaseID,testCaseStep)
-		#sendemail.sendEMAIL(testcaseID, testCaseStep, expected_value, recognizedText)
+		#sendsms.sendSMS(testcaseID,testCaseStep,username)
+		#sendemail.sendEMAIL(testcaseID, testCaseStep, expected_value, recognizedText,username)
 	else:
 		result = "Pass"
 	execution_status = "completed"
 	execution_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	query = "UPDATE ivr_test_case_master set recording_url = %s, actual_value = %s, recording_duration = %s, result = %s, execution_status = %s, execution_datetime = %s where testcaseid=%s and testcasestepid = %s"
-	args = (recordingURL, str(recognizedText), str(recordingDuration), str(result), str(execution_status), str(execution_datetime), str(testcaseID), testCaseStep)
+	query = "UPDATE ivr_test_case_master set recording_url = %s, actual_value = %s, recording_duration = %s, result = %s, execution_status = %s, execution_datetime = %s where testcaseid=%s and testcasestepid = %s and username=%s"
+	args = (recordingURL, str(recognizedText), str(recordingDuration), str(result), str(execution_status), str(execution_datetime), str(testcaseID), testCaseStep, username)
 	cur.execute(query,args)
 	print("Rows Affected==>"+str(cur.rowcount))
 	conn.commit()
