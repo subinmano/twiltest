@@ -46,6 +46,7 @@ databasename = os.environ["databasename"]
 databasehost = os.environ["databasehost"]
 databaseusername = os.environ["databaseusername"]
 databasepassword = os.environ["databasepassword"]
+datasbase_uri = os.environ["database_uri"]
 
 #Set key for session variables
 #SECRET_KEY = os.environ["SECRET_KEY"]
@@ -423,7 +424,8 @@ if __name__ == '__main__':
 	app = Flask(__name__)
 
 	app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
-	app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://infypoc:infypoc123@CHNMCT105080L/ivr_test_case'
+	#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://infypoc:infypoc123@CHNMCT105080L/ivr_test_case'
+	app.config['SQLALCHEMY_DATABASE_URI'] = databaseuri
 
 	db.init_app(app)
 
