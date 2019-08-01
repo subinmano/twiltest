@@ -1,1 +1,1 @@
-web: python usersequential.py
+web: python auth.py
