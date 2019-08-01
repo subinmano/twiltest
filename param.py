@@ -102,7 +102,7 @@ def formJsonObjForAllParam(paramList):
 			#print("jsonString::"+jsonString[:-1])
 			jsonString = jsonString.replace("\n","")
 			jsonString = jsonString[:-1] + '],'
-  	jsonString = jsonString[:-1] + '}'
+	jsonString = jsonString[:-1] + '}'
 	#print("jsonString::"+jsonString)
 	jsonData = json.loads(jsonString)
 	#print (jsonData['source'][0])
