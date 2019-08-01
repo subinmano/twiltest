@@ -152,9 +152,9 @@ def ExpandAndUpdateDynamicTestCase(paramJsonObj,dynamicParamLen,testCaseID,curre
 			inputValue = inputValue.replace('}','',2)
 			outputValue = outputValue.replace('}','',2)
 			outputValue = outputValue.replace('{','',2)
-      			print("inputValue::"+inputValue+"::Output::replacedValue::"+outputValue)
+			print("inputValue::"+inputValue+"::Output::replacedValue::"+outputValue)
 			#print("Output::replacedValue::"+replacedValue)
-		    	query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence,uploaded_date,username) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence,uploaded_date,username) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 			print(r[0]+"|"+r[1]+"|"+r[2]+"|"+r[3]+"|"+inputValue+"|"+r[5]+"|"+outputValue+"|"+r[7]+"|"+r[8]+"|"+uploadDatetime+"|"+currentUserName)
 			args = (r[0]+"_"+str(i+1),r[1],r[2],r[3],inputValue,r[5],outputValue,r[7],r[8],uploadDatetime,currentUserName)
 			insCur.execute(query,args)
