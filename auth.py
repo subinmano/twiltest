@@ -410,13 +410,13 @@ def recording():
 	if "Reply" in action:
 		if "DTMF" in input_type:
 			currentStepCount=int(currentStepCount)+1
-			print("I am at DTMF input step:: " +currentStepCount)
+			print("I am at DTMF input step:: " +str(currentStepCount))
 			response.play(digits=input_value)
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=[username], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 			
 		if "Say" in input_type:
 			currentStepCount=int(currentStepCount)+1
-			print("I am at Say input step:: " +currentStepCount)
+			print("I am at Say input step:: " +str(currentStepCount))
 			response.say(input_value, voice="alice", language="en-US")
 			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=[username], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	
@@ -437,29 +437,33 @@ def recording():
 			makecallfortestcase(nextTestCaseid,username)
 	return str(response)
 
-# Receive recording metadata-- Only applicable for Twilio
+# Receive recording metadata
 @auth.route("/recording_stat", methods=['GET', 'POST'])
 def recording_stat():
 	print("I am at recording callback event")
 	req = request.get_json(silent=True, force=True)
+	print(req)
 	StepNumber = request.values.get("step", None)
 	print("StepNumber==>"+str(StepNumber))
 	testCaseID = request.values.get("currentTestCaseID", None)
 	print("testCaseID==>"+str(testCaseID))
 	username = request.values.get("user_name", None)
 	print("Username==>"+username)
+	RecordingUrl = request.values.get("RecordingUrl", None)
+	print(RecordingUrl)
+	'''
 	AccountSid = request.values.get("AccountSid", None)
 	CallSid =  request.values.get("CallSid", None)
 	RecordingSid = request.values.get("RecordingSid", None)
-	RecordingUrl = request.values.get("RecordingUrl", None)
 	RecordingStatus = request.values.get("RecordingStatus", None)
 	RecordingDuration = request.values.get("RecordingDuration", None)
 	RecordingChannels = request.values.get("RecordingChannels", None)
 	RecordingStartTime = request.values.get("RecordingStartTime", None)
 	RecordingSource	= request.values.get("RecordingSource", None)
-	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
-	if Recognized_text:
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber,username)
+	'''
+	#Recognized_text = transcribe.goog_speech2text(RecordingUrl)
+	#if Recognized_text:
+		#updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber,username)
 	print("testCaseID==>"+str(testCaseID))
 	
 	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber)+"\nUser name==>"+username)
