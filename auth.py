@@ -118,15 +118,16 @@ def load_TestCaseUploadPage():
 @auth.route('/UploadTestCaseToDB',methods = ['POST'])
 @login_required
 def submitFileToDB():
+	currentUserName = current_user.email
+	print("The logged in user is : "+currentUserName)
 	if request.method == 'POST':
 		f = request.files['fileToUpload']
 		f.save(f.filename)
-		checktestcasetype(f.filename)
+		checktestcasetype(f.filename,currentUserName)
 	return readTestCasesFromDB()
 
 # Receive post request from HTML and perform actions based on dynamic parameters or static parameters	
-def checktestcasetype(uploadedFileName):
-	currentUserName = session['username']
+def checktestcasetype(uploadedFileName,currentUserName):
 	with open(uploadedFileName, "r") as ins:
 		TestCaseLine = ins.readline().split(",")
 		if TestCaseLine[9] == "Input Dynamic Param":
@@ -139,11 +140,11 @@ def checktestcasetype(uploadedFileName):
 				param.ExpandAndUpdateDynamicTestCase(jsonParamObj,jsonParamObj['dynamicParamLength'],eachTestCase,currentUserName)
 				print('paramListString::'+paramListString)
 		else:
-			uploadTestCaseToDB(uploadedFileName)
+			uploadTestCaseToDB(uploadedFileName,currentUserName)
 	return ""
 
 # Upload static test case information to Database
-def uploadTestCaseToDB(uploadedFileName):
+def uploadTestCaseToDB(uploadedFileName,currentUserName):
 	with open(uploadedFileName, "r") as ins:
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
@@ -160,7 +161,6 @@ def uploadTestCaseToDB(uploadedFileName):
 			promptDuration = TestCaseLine[7]
 			expectedConfidence = TestCaseLine[8]
 			uploadDatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-			currentUserName = session['username']
 			print ("Current User name::"+currentUserName);
 			query = "INSERT INTO ivr_test_case_master(testcaseid,testcasestepid,action,input_type,input_value,pause_break,expected_value,expected_prompt_duration, expected_confidence, uploaded_date,username) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 			args = (caseID,caseStepID,actionType,inputType,inputValue,inputPause,expectedValue,promptDuration,expectedConfidence,uploadDatetime,currentUserName)
@@ -177,9 +177,10 @@ def uploadTestCaseToDB(uploadedFileName):
 @auth.route('/ReadTestCase')
 @login_required
 def readTestCasesFromDB():
+	currentUserName = current_user.email
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT * FROM ivr_test_case_master where username = '"+session['username']+"'")
+	cur.execute("SELECT * FROM ivr_test_case_master where username = '"+currentUserName+"'")
 	fileContent = """<html><title>IVR test case Execution</title><body bgcolor="#42f5d7"><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th></tr>"""
 	for r in cur:
 		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td></tr>'
@@ -196,10 +197,12 @@ def validateString(testCaseItem):
 
 #Create json of the testcase and call make call
 @auth.route('/ExecuteTestCase', methods = ['POST'])
+@login_required
 def ExecuteTestCase():
+	currentUserName = current_user.email
 	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 	cur = conn.cursor()
-	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master where username = '"+session['username']+"'")
+	cur.execute("SELECT distinct(testcaseid) FROM ivr_test_case_master where username = '"+currentUserName+"'")
 	listOfTestCases=[]
 	for r in cur:
 		listOfTestCases.append(r[0])
@@ -209,11 +212,11 @@ def ExecuteTestCase():
 	for i in range(0,len(listOfTestCases)):
 		if i==len(listOfTestCases)-1:
 			print("Current::"+listOfTestCases[i]+"Next::"+"End")
-			createJSONStringForTestCases(listOfTestCases[i],'none',session['username'])
+			createJSONStringForTestCases(listOfTestCases[i],'none',currentUserName)
 		else:
 			print("Current::"+listOfTestCases[i]+"Next::"+listOfTestCases[i+1])
-			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1],session['username'])
-	#makecallfortestcase(listOfTestCases[0],session['username'])
+			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1],currentUserName)
+	#makecallfortestcase(listOfTestCases[0],currentUserName)
 	return redirect(url_for('main.profile'))
 
 #Create Json of Testcase details and insert to table
