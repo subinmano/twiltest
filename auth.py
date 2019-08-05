@@ -216,7 +216,7 @@ def ExecuteTestCase():
 		else:
 			print("Current::"+listOfTestCases[i]+"Next::"+listOfTestCases[i+1])
 			createJSONStringForTestCases(listOfTestCases[i],listOfTestCases[i+1],currentUserName)
-	#makecallfortestcase(listOfTestCases[0],currentUserName)
+	makecallfortestcase(listOfTestCases[0],currentUserName)
 	return redirect(url_for('main.profile'))
 
 #Create Json of Testcase details and insert to table
