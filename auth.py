@@ -342,6 +342,7 @@ def recording():
 	username=request.values.get("user_name", '')
 	print("Username is " +username)
 	
+	'''
 	#Only for Signalwire... Not for Twilio
 	RecordingUrl = request.values.get("RecordingUrl", None)
 	RecordingDuration = request.values.get("RecordingDuration", None)
@@ -349,7 +350,7 @@ def recording():
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
 		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount, username)
-		
+	'''	
 	#Get values from json file
 	
 	#If reading from file
@@ -411,13 +412,13 @@ def recording():
 			currentStepCount=int(currentStepCount)+1
 			print("I am at DTMF input step:: " +currentStepCount)
 			response.play(digits=input_value)
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=username,_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=username, _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=username, _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 			
 		if "Say" in input_type:
 			currentStepCount=int(currentStepCount)+1
 			print("I am at Say input step:: " +currentStepCount)
 			response.say(input_value, voice="alice", language="en-US")
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=username,_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=username, _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=username, _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	
 	if "Hangup" in action:
 		print ("I am at hangup")
