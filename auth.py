@@ -310,7 +310,7 @@ def makecallfortestcase(testcaseid,username):
 	
 	# Print the values we need to make the call
 	print("Values for the call are::")
-	print(dnis, cli, test_case_id, max_length)
+	print(dnis, cli, test_case_id, max_rec_length)
 		
 	#Initiate Twilio client
 	#client = Client(account_sid, auth_token)
