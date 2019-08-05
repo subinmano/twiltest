@@ -243,7 +243,7 @@ def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid,currentUserNam
 	for testCaseStepItem in testCaseStepsList:
 		testCaseStepItem=testCaseStepItem.replace('"','')
 		splittedTestCaseItem=testCaseStepItem.split("|")
-		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","expected_value":"'+splittedTestCaseItem[4]+'","prompt_duration":"'+splittedTestCaseItem[5]+'","user_name":"'+splittedTestCaseItem[6]+'"}'
+		jsonTestCaseString=jsonTestCaseString+'{"action":"'+splittedTestCaseItem[0]+'","input_type":"'+splittedTestCaseItem[1]+'","input_value":"'+splittedTestCaseItem[2]+'","pause":"'+splittedTestCaseItem[3]+'","expected_value":"'+splittedTestCaseItem[4]+'","prompt_duration":"'+splittedTestCaseItem[5]+'","user_name":"'+splittedTestCaseItem[6]+'"},'
 	jsonTestCaseString=jsonTestCaseString[:-1]
 	jsonTestCaseString=jsonTestCaseString+']}'
 	query = "INSERT INTO ivr_test_case_json(testcaseid,test_case_json,username) values (%s,%s,%s)"
