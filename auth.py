@@ -329,7 +329,7 @@ def record_welcome():
 	currentTestCaseid=request.values.get("test_case_id", None)
 	prompt_duration=request.values.get("prompt_duration", '')
 	username=request.values.get("user_name", '')
-	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], user_name=[username]_external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	return str(response)
 
 # Twilio/Signalwire functions for record and TTS
