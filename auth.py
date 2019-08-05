@@ -329,7 +329,7 @@ def record_welcome():
 	currentTestCaseid=request.values.get("test_case_id", None)
 	prompt_duration=request.values.get("prompt_duration", '')
 	username=request.values.get("user_name", '')
-	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], user_name=[username], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	return str(response)
 
 # Twilio/Signalwire functions for record and TTS
@@ -412,13 +412,13 @@ def recording():
 			currentStepCount=int(currentStepCount)+1
 			print("I am at DTMF input step:: " +currentStepCount)
 			response.play(digits=input_value)
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=username, _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=[username], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 			
 		if "Say" in input_type:
 			currentStepCount=int(currentStepCount)+1
 			print("I am at Say input step:: " +currentStepCount)
 			response.say(input_value, voice="alice", language="en-US")
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=username, _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=[username],_external=True), timeout="3", playBeep="false", maxLength=max_rec_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=[username], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	
 	if "Hangup" in action:
 		print ("I am at hangup")
