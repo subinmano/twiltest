@@ -466,7 +466,7 @@ def recording_stat():
 		#updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber,username)
 	print("testCaseID==>"+str(testCaseID))
 	
-	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber)+"\nUser name==>"+username)
+	#print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber)+"\nUser name==>"+username)
 	return()
 
 if __name__ == '__main__':
