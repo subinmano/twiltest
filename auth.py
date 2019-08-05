@@ -252,36 +252,74 @@ def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid,currentUserNam
 	conn.commit()
 	cur.close()
 	conn.close()
-	filename = testCaseid + ".json"
+	filename = testCaseid + currentUserName + ".json"
 	f = open(filename, "w")
 	f.write(jsonTestCaseString)
 	return()
+
+# Show testcase execution result in HTML page
+@auth.route('/ShowTestResult', methods=['GET','POST'])
+@login_required
+def ShowTestResult():
+	currentUserName = current_user.email
+	testcaseid = request.values.get("TestCaseId", None)
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s and username=%s"
+	args = (str(testcaseid),currentUserName)
+	cur.execute(query,args)
+	fileContent = """<html><title>IVR test case Execution Result</title><body bgcolor="#42f5d7"><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th><th>Uploaded date</th><th>Execution status</th><th>Execution date</th></tr>"""
+	for r in cur:
+		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td><td>'+validateString(r[13])+'</td><td>'+validateString(r[14])+'</td><td>'+validateString(r[15])+'</td></tr>'
+		print("R3==>"+r[3])
+	cur.close()
+	conn.close()
+	fileContent = fileContent + '</body></html>'
+	return fileContent
 
 #############################################################Telephony activities################################################################
 #Receive the POST request from Execute Test Case
 #@auth.route('/start', methods=['GET','POST'])
 def makecallfortestcase(testcaseid,username):
-	# Get filename
-	filename = testcaseid + ".json"
-	# Declare session variables
-	session['currentCount']=0
-	session['username']=username
+	#Initialize currentStepCount for keeping track of the test steps
 	currentStepCount=0
+	# If reading from file - Get filename
+	filename = testcaseid + username + ".json"
 	with open(filename) as json_file:
 		testCaseJSON = json.load(json_file)
 		test_case_id = testCaseJSON["test_case_id"]
 		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
-		max_length = testCaseJSON["steps"][currentStepCount]["prompt_duration"]
-	if max_length!="":
-		max_length = int(max_length) + 5
+		max_rec_length = testCaseJSON["steps"][currentStepCount]["prompt_duration"]
+	'''
+	# If reading from db
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	query = "SELECT test_case_json FROM ivr_test_case_json where testcaseid=%s and username=%s"
+	args = (str(testcaseid),username)
+	cur.execute(query,args)
+	for r in cur:
+		testCaseJSON = json.load(r[0])
+		test_case_id = testCaseJSON["test_case_id"]
+		dnis = testCaseJSON["steps"][currentStepCount]["input_value"]
+		max_rec_length = testCaseJSON["steps"][currentStepCount]["prompt_duration"]
+	'''
+	if max_rec_length!="":
+		max_rec_length = int(max_rec_length) + 5
 	else:
-		max_length = 600
+		max_rec_length = 600	
+	
+	# Print the values we need to make the call
+	print("Values for the call are::")
 	print(dnis, cli, test_case_id, max_length)
-	#Twilio API call
+		
+	#Initiate Twilio client
 	#client = Client(account_sid, auth_token)
-	#Signalwire API call
+	
+	#Initiate Signalwire client
 	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
-	call = client.calls.create(to=dnis, from_=cli, url=url_for('.record_welcome', test_case_id=[test_case_id], prompt_duration=[max_length], _external=True))
+	
+	#Initiate the call
+	call = client.calls.create(to=dnis, from_=cli,Record=true,url=url_for('.record_welcome', test_case_id=[test_case_id], prompt_duration=[max_length],user_name=[username]),_external=True)
 	return()
 
 # Record Welcome prompt
@@ -290,8 +328,8 @@ def record_welcome():
 	response = VoiceResponse()
 	currentTestCaseid=request.values.get("test_case_id", None)
 	prompt_duration=request.values.get("prompt_duration", '')
-	#response.record(trim="trim-silence", action="/recording?StepNumber=1,TestCaseId=currentTestCaseid", timeout="3", playBeep="false", recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
-	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+	username=request.values.get("user_name", '')
+	response.record(trim="trim-silence", action=url_for('.recording', StepNumber=1, TestCaseId=[currentTestCaseid], user_name=[username]_external=True), timeout="3", playBeep="false", maxLength=prompt_duration, recordingStatusCallback=url_for('.recording_stat', step=[1], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	return str(response)
 
 # Twilio/Signalwire functions for record and TTS
@@ -301,6 +339,8 @@ def recording():
 	currentStepCount= request.values.get("StepNumber", None)
 	testcaseid = request.values.get("TestCaseId", None)
 	print("testcaseid is " +testcaseid)
+	username=request.values.get("user_name", '')
+	print("Username is " +username)
 	
 	#Only for Signalwire... Not for Twilio
 	RecordingUrl = request.values.get("RecordingUrl", None)
@@ -308,10 +348,12 @@ def recording():
 	print("Recording URL is => " + RecordingUrl)
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount,session['username'])
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, RecordingDuration, testcaseid, currentStepCount, username)
 		
-	#Common for both-- Get values from json file
-	filename = testcaseid + ".json"
+	#Get values from json file
+	
+	#If reading from file
+	filename = testcaseid + username + ".json"
 	print("CurrentStepCount is " + currentStepCount)
 	with open(filename) as json_file:
 		testCaseJSON = json.load(json_file)
@@ -327,41 +369,60 @@ def recording():
 		print("Input Value is =>" + input_value)
 		pause = testCaseJSON["steps"][int(currentStepCount)]["pause"]
 		print("Input Value is =>" + pause)
-		max_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
-		print("Recording Length =>" + max_length)
-		#expected_value=testCaseJSON["steps"][int(currentStepCount)]["expected_value"]
-		#speech_context=re.split('\s+', expected_value)
-		#print(speech_context)
-		
+		max_rec_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
+		print("Recording Length =>" + max_rec_length)
+	'''
+	#If reading from db
+	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
+	cur = conn.cursor()
+	query = "SELECT test_case_json FROM ivr_test_case_json where testcaseid=%s and username=%s"
+	args = (str(testcaseid),username)
+	cur.execute(query,args)
+	for r in cur:
+		testCaseJSON = json.load(r[0])
+		currentTestCaseid = testCaseJSON["test_case_id"]
+		print ("Test Case ID ==>"+currentTestCaseid)
+		nextTestCaseid = testCaseJSON["next_test_case_id"]
+		print ("Next Test Case ID ==>"+nextTestCaseid)
+		action = testCaseJSON["steps"][int(currentStepCount)]["action"]
+		print("Action is =>" + action)
+		input_type = testCaseJSON["steps"][int(currentStepCount)]["input_type"]
+		print("Input Type is =>" + input_type)
+		input_value = testCaseJSON["steps"][int(currentStepCount)]["input_value"]
+		print("Input Value is =>" + input_value)
+		pause = testCaseJSON["steps"][int(currentStepCount)]["pause"]
+		print("Input Value is =>" + pause)
+		max_rec_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
+		print("Recording Length =>" + max_rec_length)
+	'''	
 	#Check for pause or break needed
 	if pause!="":
 		response.pause(length=int(pause))
 		print("I have paused")
 	
 	#Set maximum length of recording if prompt duration is mentioned or else set maximum length as 600 seconds
-	if max_length!="":
-		max_length = int(max_length) + 5
+	if max_rec_length!="":
+		max_rec_length = int(max_rec_length) + 5
 	else:
-		max_length = 600
+		max_rec_length = 600
 			
 	if "Reply" in action:
 		if "DTMF" in input_type:
-			print("i am at DTMF input step")
 			currentStepCount=int(currentStepCount)+1
-			session['currentCount']=str(currentStepCount)
+			print("I am at DTMF input step:: " +currentStepCount)
 			response.play(digits=input_value)
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=username,_external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=username, _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 			
 		if "Say" in input_type:
-			print("i am at Say input step")
 			currentStepCount=int(currentStepCount)+1
-			session['currentCount']=str(currentStepCount)
+			print("I am at Say input step:: " +currentStepCount)
 			response.say(input_value, voice="alice", language="en-US")
-			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid], _external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
+			response.record(trim="trim-silence", action=url_for('.recording', StepNumber=[str(currentStepCount)], TestCaseId=[currentTestCaseid],user_name=username,_external=True), timeout="3", playBeep="false", maxLength=max_length, recordingStatusCallback=url_for('.recording_stat', step=[str(currentStepCount)], currentTestCaseID=[currentTestCaseid], user_name=username, _scheme='https', _external=True),recordingStatusCallbackMethod="POST")
 	
 	if "Hangup" in action:
 		print ("I am at hangup")
 		print ("Testcaseid is " + currentTestCaseid)
+		print("Username is " +username)
 		response.hangup()
 		print ("I am after hangup")
 		execution_status = "completed"
@@ -369,30 +430,11 @@ def recording():
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
 		query = "UPDATE ivr_test_case_master set execution_status = %s, execution_datetime = %s where testcaseid = %s and username =%s and action = %s"
-		args = (str(execution_status), str(execution_datetime), currentTestCaseid, session['username'], 'Hangup')
+		args = (str(execution_status), str(execution_datetime), currentTestCaseid, username,'Hangup')
 		cur.execute(query,args)
 		if nextTestCaseid!="none":
-			makecallfortestcase(nextTestCaseid,session['username'])
+			makecallfortestcase(nextTestCaseid,username)
 	return str(response)
-
-# Show testcase execution result in HTML page
-@auth.route('/ShowTestResult', methods=['GET','POST'])
-def ShowTestResult():
-	response = VoiceResponse()
-	testcaseid = request.values.get("TestCaseId", None)
-	conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
-	cur = conn.cursor()
-	query = "SELECT * FROM ivr_test_case_master where testcaseid=%s and username=%s"
-	args = (str(testcaseid),session['username'])
-	cur.execute(query,args)
-	fileContent = """<html><title>IVR test case Execution Result</title><body bgcolor="#42f5d7"><body><table border="1"><tr><th>Testcase ID</th><th>Step No</th><th>Action</th><th>Input Type</th><th>Input Value</th><th>Pause</th><th>Expected Prompt</th><th>Expected Prompt Duration</th><th>Min Confidence</th><th>Actual Prompt</th><th>Result</th><th>Recording URL</th><th>Recording duration</th><th>Uploaded date</th><th>Execution status</th><th>Execution date</th></tr>"""
-	for r in cur:
-		fileContent =  fileContent + '<tr><td>'+validateString(r[0])+'</td><td>'+validateString(r[1])+'</td><td>'+validateString(r[2])+'</td><td>'+validateString(r[3])+'</td><td>'+validateString(r[4])+'</td><td>'+validateString(r[5])+'</td><td>'+validateString(r[6])+'</td><td>'+validateString(r[7])+'</td><td>'+validateString(r[8])+'</td><td>'+validateString(r[9])+'</td><td>'+validateString(r[10])+'</td><td>'+validateString(r[11])+'</td><td>'+validateString(r[12])+'</td><td>'+validateString(r[13])+'</td><td>'+validateString(r[14])+'</td><td>'+validateString(r[15])+'</td></tr>'
-		print("R3==>"+r[3])
-	cur.close()
-	conn.close()
-	fileContent = fileContent + '</body></html>'
-	return fileContent
 
 # Receive recording metadata-- Only applicable for Twilio
 @auth.route("/recording_stat", methods=['GET', 'POST'])
@@ -403,6 +445,8 @@ def recording_stat():
 	print("StepNumber==>"+str(StepNumber))
 	testCaseID = request.values.get("currentTestCaseID", None)
 	print("testCaseID==>"+str(testCaseID))
+	username = request.values.get("user_name", None)
+	print("Username==>"+username)
 	AccountSid = request.values.get("AccountSid", None)
 	CallSid =  request.values.get("CallSid", None)
 	RecordingSid = request.values.get("RecordingSid", None)
@@ -414,9 +458,10 @@ def recording_stat():
 	RecordingSource	= request.values.get("RecordingSource", None)
 	Recognized_text = transcribe.goog_speech2text(RecordingUrl)
 	if Recognized_text:
-		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber,session['username'])
+		updateresult.updateResultToDB(RecordingUrl, Recognized_text, testCaseID, StepNumber,username)
 	print("testCaseID==>"+str(testCaseID))
-	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber))
+	
+	print ("RecordingUrl==>"+RecordingUrl+"\nRecognizedText==>"+Recognized_text+"\nStep number==>"+str(StepNumber)+"\nUser name==>"+username)
 	return()
 
 if __name__ == '__main__':
