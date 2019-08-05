@@ -25,7 +25,7 @@ from signalwire.voice_response import VoiceResponse
 from flask import Flask, request, Response, make_response, jsonify, url_for, redirect, session, render_template, Blueprint, flash
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from flask import g
 
 # Import custom modules
@@ -258,9 +258,9 @@ def createJSONStringForTestCases(currenttestcaseid,nexttestcaseid,currentUserNam
 #Receive the POST request from Execute Test Case
 #@auth.route('/start', methods=['GET','POST'])
 def makecallfortestcase(testcaseid,username):
-	# Get testcase details as string
-	#testcaseid = request.values.get("TestCaseId", None)
+	# Get filename
 	filename = testcaseid + ".json"
+	# Declare session variables
 	session['currentCount']=0
 	session['username']=username
 	currentStepCount=0
@@ -420,11 +420,10 @@ if __name__ == '__main__':
 	port = int(os.getenv('PORT', 5000))
 	print ('Starting app on port %d' % port)
 	
-	#Initialize init_app
+	#Initialize app
 	app = Flask(__name__)
 
 	app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
-	#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://infypoc:infypoc123@CHNMCT105080L/ivr_test_case'
 	app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 
 	db.init_app(app)
@@ -433,18 +432,16 @@ if __name__ == '__main__':
 	login_manager.login_view = 'auth.login'
 	login_manager.init_app(app)
 
-	#from models import User
-
 	@login_manager.user_loader
 	def load_user(user_id):
 		#since the user_id is just the primary key of our user table, use it in the query for the user
 		return User.query.get(int(user_id))
 
-	# blueprint for auth routes in our app
+	# blueprint for auth routes in the app
 	from auth import auth as auth_blueprint
 	app.register_blueprint(auth_blueprint)
 
-	# blueprint for non-auth parts of app
+	# blueprint for non-auth parts of the app
 	from main import main as main_blueprint
 	app.register_blueprint(main_blueprint)
 	
