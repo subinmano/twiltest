@@ -319,7 +319,7 @@ def makecallfortestcase(testcaseid,username):
 	client = signalwire_client(account_sid, auth_token, signalwire_space_url=signalwire_space_url)
 	
 	#Initiate the call
-	call = client.calls.create(to=dnis, from_=cli,Record=true,url=url_for('.record_welcome', test_case_id=[test_case_id], prompt_duration=[max_length],user_name=[username]),_external=True)
+	call = client.calls.create(to=dnis, from_=cli,Record="true",url=url_for('.record_welcome', test_case_id=[test_case_id], prompt_duration=[max_length],user_name=[username]),_external=True)
 	return()
 
 # Record Welcome prompt
