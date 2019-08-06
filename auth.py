@@ -439,6 +439,9 @@ def recording():
 		args = (str(execution_status), str(execution_datetime), str(currentTestCaseid), str(username), "Hangup")
 		cur.execute(query,args)
 		print("I am after query execution")
+		conn.commit()
+		cur.close()
+		conn.close()
 		if nextTestCaseid!="none":
 			makecallfortestcase(nextTestCaseid,username)
 	return str(response)
