@@ -369,7 +369,7 @@ def recording():
 		input_value = testCaseJSON["steps"][int(currentStepCount)]["input_value"]
 		print("Input Value is =>" + input_value)
 		pause = testCaseJSON["steps"][int(currentStepCount)]["pause"]
-		print("Input Value is =>" + pause)
+		print("Pause is =>" + pause)
 		max_rec_length = testCaseJSON["steps"][int(currentStepCount)]["prompt_duration"]
 		print("Recording Length =>" + max_rec_length)
 	'''
