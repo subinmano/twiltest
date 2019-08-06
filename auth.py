@@ -429,12 +429,16 @@ def recording():
 		response.hangup()
 		print ("I am after hangup")
 		execution_status = "completed"
+		print(execution_status)
 		execution_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		print(execution_datetime)
+		print("I am before query execution")
 		conn = pymysql.connect(host=databasehost, user=databaseusername, passwd=databasepassword, port=3306, db=databasename)
 		cur = conn.cursor()
 		query = "UPDATE ivr_test_case_master set execution_status = %s, execution_datetime = %s where testcaseid = %s and username =%s and action = %s"
-		args = (str(execution_status), str(execution_datetime), currentTestCaseid, username,'Hangup')
+		args = (str(execution_status), str(execution_datetime), str(currentTestCaseid), str(username), "Hangup")
 		cur.execute(query,args)
+		print("I am after query execution")
 		if nextTestCaseid!="none":
 			makecallfortestcase(nextTestCaseid,username)
 	return str(response)
